@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ex05.mapper.BoardMapper">
+	<!--namespace는 경로 설정을 해주고 밑에 id는 timemapper에 사용하는 함수와 이름을 같게 설정해준다. -->
+	
+	<!-- <select id="getList" resultType="boardVO">
+		SELECT UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK, JOBSKILL, DEVPT,
+		INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL
+		FROM MEMBER
+	</select>
+ --> 
+   <select id="getList" resultType="boardVO">
+		SELECT UNO, UNM, PWD, TO_CHAR(birth, 'YYYY-MM-DD') AS BIRTH, PHOTO, SEX, TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE, JOBRANK, JOBSKILL, DEVPT,
+		INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL
+		FROM MEMBER
+	</select>
+ 
+
+  
+	
+<!-- 	<select id="getList" resultType="boardVO">
+		SELECT UNO, UNM, PWD, DATE(BIRTH) AS BIRTH , PHOTO, SEX, DATE(ENTRDATE) AS ENTRDATE, JOBRANK, JOBSKILL, DEVPT,
+		INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL
+		FROM MEMBER
+	</select> -->
+ 
+	<!-- <insert id="insert"> 파라미터 타입을 안 적어도 가능 <selectKey keyProperty="uNo" 
+		order="BEFORE" resultType="long"> SELECT SEQ_BOARD.NEXTVAL FROM DUAL 게시판 
+		번호가 자동생성일 때는 셀렉트를 먼저해서 게시판번호를 불러온다 그리고 검색 </selectKey> INSERT INTO MEMBER(UNO, 
+		UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK, JOBSKILL, DEVPT, INOFFI_STS, 
+		MBLNO, EMAILADDR, DELETE_COL) VALUES(${uNo}, #{uNm}, #{pwd},#{birth} ,#{photo}, 
+		#{sex}, #{entrDate}, #{jobRank}, #{jobSkill},#{devPt}, #{inoffi_sts}, #{mblNo}, 
+		#{emailAddr}, #{delete_col}) </insert> -->
+
+	<insert id="insert" parameterType="boardVO">
+		INSERT INTO MEMBER(UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK,
+		JOBSKILL, DEVPT, INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL)
+		VALUES(#{uno}, #{unm}, #{pwd},#{birth} ,#{photo}, #{sex}, #{entrDate},
+		#{jobRank}, #{jobSkill},#{devPt}, #{inoffiSts}, #{mblNo},
+		#{emailAddr}, #{deleteCol})
+	</insert>
+	
+	<!-- 	<insert id="insert" parameterType="boardVO">
+		INSERT INTO MEMBER(UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK,
+		JOBSKILL, DEVPT, INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL)
+		VALUES(#{uNo}, #{uNm}, #{pwd},DATE_FORMAT(#{birth}, '%Y-%m-%d') ,#{photo}, #{sex}, DATE_FORMAT(#{entrDate}, '%Y-%m-%d') ,
+		#{jobRank}, #{jobSkill},#{devPt}, #{inoffiSts}, #{mblNo},
+		#{emailAddr}, #{deleteCol})
+	</insert>
+	 -->
+
+	<!-- <select id="read" parameterType="long" resultType="boardVO"> SELECT 
+		UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK, JOBSKILL, DEVPT, INOFFI_STS, 
+		MBLNO, EMAILADDR, DELETE_COL FROM MEMBER WHERE UNO = #{UNO} </select> -->
+	
+	<select id="read" resultType="boardVO">
+		SELECT UNO, UNM, PWD, TO_CHAR(birth, 'YYYY-MM-DD') AS BIRTH, PHOTO, SEX, TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE, JOBRANK, JOBSKILL, DEVPT,
+		INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL FROM MEMBER WHERE UNO =
+		#{UNO}
+	</select>
+
+	<delete id="delete">
+		DELETE FROM MEMBER WHERE UNO = #{UNO}
+	</delete>
+	
+		<update id="update">
+		UPDATE MEMBER
+		SET UNM = #{unm}, 
+		PWD = CASE WHEN #{pwd} IS NOT NULL AND #{pwd} != '' THEN #{pwd} ELSE PWD END, 
+		BIRTH = #{birth}, PHOTO = #{photo} , SEX = #{sex} , ENTRDATE = #{entrDate}, JOBRANK = #{jobRank} ,
+		JOBSKILL = #{jobSkill} , DEVPT = #{devPt} , INOFFI_STS = #{inoffiSts} , MBLNO
+		= #{mblNo} , EMAILADDR = #{emailAddr} , DELETE_COL = #{deleteCol}
+		WHERE UNO = #{uno}
+	</update>
+
+<!-- 	<update id="update">
+		UPDATE MEMBER
+		SET UNM = #{uNm}, PWD = #{pwd}, BIRTH = DATE_FORMAT(#{birth}, '%Y-%m-%d') , PHOTO = #{photo} , SEX
+		= #{sex} , ENTRDATE = DATE_FORMAT(#{entrDate}, '%Y-%m-%d'), JOBRANK = #{jobRank} ,
+		JOBSKILL = #{jobSkill} , DEVPT = #{devPt} , INOFFI_STS = #{inoffiSts} , MBLNO
+		= #{mblNo} , EMAILADDR = #{emailAddr} , DELETE_COL = #{deleteCol}
+		WHERE UNO = #{uNo}
+	</update>
+ -->
+<!-- 	<resultMap id="memberResultMap" type="memberVO">
+		other fields
+		<result property="birth" column="birth"
+			javaType="java.sql.Date" jdbcType="DATE" />
+		<result property="entrDate" column="entrDate"
+			javaType="java.sql.Date" jdbcType="DATE" />
+	</resultMap>
+ -->
+ 
+ <select id="searchMembers" resultType="boardVO">
+  SELECT * FROM member
+  WHERE 
+    (unm LIKE CONCAT('%', #{unm}, '%') OR #{unm} IS NULL)
+    AND (jobSkill = #{jobSkill} OR #{jobSkill} IS NULL)
+    AND (inoffiSts = #{inoffiSts} OR #{inoffiSts} IS NULL)
+    AND (entrDate BETWEEN #{startDate} AND #{endDate} OR (#{startDate} IS NULL AND #{endDate} IS NULL))
+</select> 
+ 
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0/EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+<!-- 
+주어진 설정은 MyBatis의 설정 파일인 mybatis-config.xml에서 사용되는 설정입니다. 
+mapUnderscoreToCamelCase 설정이 true로 설정되어 있으므로, MyBatis는 데이터베이스 
+컬럼명의 언더스코어(_)를 자바의 카멜케이스(CamelCase) 표기법으로 매핑합니다.
+예를 들어, 데이터베이스의 INOFFI_STS 컬럼을 자바 코드에서 사용할 때 MyBatis는 이를 
+inoffiSts와 같이 매핑합니다. 이로 인해 데이터베이스 컬럼명과 자바 필드명이 자동으로 매칭되어 코드 
+작성 시 편리성을 제공합니다.
+만약 mapUnderscoreToCamelCase 설정이 false로 설정되어 있다면, 
+MyBatis는 데이터베이스 컬럼명과 자바 필드명을 일치시킵니다. 
+따라서 INOFFI_STS 컬럼은 자바 코드에서도 INOFFI_STS로 사용해야 합니다.
+mapUnderscoreToCamelCase 설정은 MyBatis에서 많이 사용되는 설정 중 하나이며, 
+개발자의 취향과 프로젝트의 규칙에 따라 설정 값을 변경할 수 있습니다.
+ -->
+  <settings>
+  <setting name="mapUnderscoreToCamelCase" value="true"/> 
+ </settings>
+ 
+	<typeAliases>
+		<typeAlias type="com.example.ex05.domain.vo.MemberVO" alias="boardVO"/>
+		<typeAlias type="com.example.ex05.domain.vo.MemberDTO" alias="memberDTO"/>
+		<typeAlias type="com.example.ex05.domain.vo.Criteria" alias="criteria"/>
+	</typeAliases>
+  
+</configuration>
