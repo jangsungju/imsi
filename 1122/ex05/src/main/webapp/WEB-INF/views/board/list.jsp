@@ -76,7 +76,7 @@ table th, table td {
 							</div>
 							<div class="form-row">
 								<label class="form-label"> 기술등급 <select name="jobSkill"
-									class="form-input" id="jobSkillInput" value="R">
+									class="form-input" id="jobSkillInput" >
 										<option value=""></option>
 										<option value="01">특급</option>
 										<option value="02">고급</option>
@@ -87,7 +87,7 @@ table th, table td {
 							</div>
 							<div class="form-row">
 								<label class="form-label">재직상태 <select name="inoffiSts"
-									class="form-input" id="inoffiStsInput" value="I">
+									class="form-input" id="inoffiStsInput">
 										<option value=""></option>
 										<option value="01">재직</option>
 										<option value="02">휴직</option>
@@ -97,10 +97,11 @@ table th, table td {
 							</div>
 						</div>
 						<div class="form-ent" style="text-align: left;">
-							<label class="form-label"> 입사일<input type="date"
-								name="startDate" min="1990-01-01" class="dateInput"
-								id="dateInput1"> ~ <input type="date" name="endDate"
-								min="1990-01-01" class="dateInput" id="dateInput2">
+							<label class="form-label"> 입사일
+							<input type="date" name="startDate" min="1990-01-01" class="dateInput"
+				                    id="dateInput1" oninput="limitDateInput()"> ~ 
+								<input type="date" name="endDate"
+								min="1990-01-01" class="dateInput" id="dateInput2" oninput="limitDateInput()">
 							</label>
 						</div>
 						<div class="form-submit">
@@ -109,7 +110,7 @@ table th, table td {
 						</div>
 					</form>
 				</nav>
-
+                           <div><p id="total"></p></div>
 				<!-- Table -->
 				<div class="table-wrapper">
 					<table>
@@ -129,16 +130,15 @@ table th, table td {
 							</tr>
 						</thead>
 						<tbody id="appendBody">
-						
+						 <tr class="tBody">
+        						<td colspan="10" class="noData">검색 결과가 없습니다.</td>
+      					</tr>
 						</tbody>
 						<tfoot>
 						</tfoot>
 					</table>
 				</div>
-				<div style="text-align: center;">
-				    <c:forEach var="num" begin="${pageDTO.startPage}" end="${pageDTO.endPage}">
-				      <code><c:out value ="${num}"/></code>
-				    </c:forEach>
+				<div id="pagination"></div>
 				</div>
 				<div style="text-align: right;">
 					<input type="button" value="등록"
@@ -148,7 +148,6 @@ table th, table td {
 				</div>
 			</div>
 		</div>
-	</div>
 </body>
 <!-- Scripts -->
 <script src="/resources/assets/js/jquery.min.js"></script>
@@ -157,176 +156,244 @@ table th, table td {
 <script src="/resources/assets/js/breakpoints.min.js"></script>
 <script src="/resources/assets/js/util.js"></script>
 <script src="/resources/assets/js/main.js"></script>
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-document.getElementById('dateInput1').max = new Date().toISOString().split('T')[0];
-document.getElementById('dateInput2').max = new Date().toISOString().split('T')[0];
-</script>
 <script>
 
 
-$("#testBtn").on("click", function(){
-	
-	alert("22");
-	
-	
-});
+
+const pageSize = 10; // 페이지당 표시할 데이터 개수
+let currentPage = 1; // 현재 페이지 번호
+let totalPage = 0; // 전체 페이지 개수
 
 
-// 1. 버튼을 클릭한다.
-function search2(){
-	
-	
-	
-	// 2. 서버로 파라미터 전달 후 조회한다.
-	// ex)검색조건 등 갖고오기.
-	var formData1 = $("form[name=searchForm]").serialize() ;
-	console.log("####" , formData1);
-	
-	// JSON 만들기 샘플
-	var sampleData = {};
-	sampleData.test = "aa";
-	sampleData.test2 = "bb";
-	console.log("%%%" , sampleData);
-	
-	
-	
-	// 검색 조건 가져오기
-	var formData = {
-		unm: $("#unmInput").val()
-		, jobSkill: $("#jobSkillInput").val()
-		, inoffiSts: $("#inoffiStsInput").val()
-		, startDate: $("#dateInput1").val()
-		, endDate: $("#dateInput2").val()
-		, pageNum: 1 //처음시작 페이지
-		, amount: 10 //한번에 보여줄 데이터갯수
-	};
-	
 
-	
-	$.ajax({
-		url: "/board/search",
-		type: "POST",
-		contentType: "application/json", // 요청 데이터의 Content-Type 설정
-		dataType: 'json',
-		data: JSON.stringify(formData), // JavaScript 객체를 JSON 문자열로 변환하여 전달
-		success: function(data) {
-			$("#appendBody").empty();
-			alert("성공");
-			
-			// 결과값을 확인 후 grid에 뿌려주기
-			console.log("결과값 data == " , data);
-			
-			if(data != null){
-				let bodyHtml = "";
-				$.each(data, function (index, item) {
-					
-					bodyHtml += '<tr class="tBody">';
-					bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
-					bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno +'">'+ item.uno + '</a></td>';
-					bodyHtml += '<td class="unm">'+ item.unm +'</td>';
-					bodyHtml += '<td class="birth">'+ item.birth +'</td>';
-					bodyHtml += '<td class="sex">'+ item.sex +'</td>';
-					bodyHtml += '<td class="jobRank">'+ item.jobRank +'</td>';
-					bodyHtml += '<td class="jobSkill">'+ item.jobSkill +'</td>';
-					bodyHtml += '<td class="inoffiSts">'+ item.inoffiSts +'</td>';
-					bodyHtml += '<td class="entrDate">'+ item.entrDate +'</td>';
-					bodyHtml += '<td class="project"><a href="#" class="button small">보기 (${uno})</a></td>/tr>';
-				});
-				
-				$("#appendBody").append(bodyHtml);
-			}
-			else{
-				let bodyHtml = "";
-				bodyHtml += '<tr class="tBody">';
-			}
-		},
-		error: function(xhr, status, error) {
-			console.error(error);
-		}
-	});
-	
-	
+//1. 버튼을 클릭한다.
+function search2() {
+  let bodyHtml = "";
+
+  var pageNum = 1;
+  var amount = 10;
+  // 검색 조건 가져오기
+  var formData = {
+    unm: $("#unmInput").val(),
+    jobSkill: $("#jobSkillInput").val(),
+    inoffiSts: $("#inoffiStsInput").val(),
+    startDate: $("#dateInput1").val(),
+    endDate: $("#dateInput2").val(),
+    pageNum: pageNum, // 처음 시작 페이지
+    amount: amount // 한 번에 보여줄 데이터 개수
+  };
+
+  $.ajax({
+    url: "/board/search",
+    type: "POST",
+    contentType: "application/json",
+    dataType: "json",
+    data: JSON.stringify(formData),
+    success: function(data) {
+      alert("성공");
+
+      var memberList = data.memberList;
+      var totalCount = data.totalCount;
+      // 결과값을 확인 후 grid에 뿌려주기
+      console.log("결과값 data == ", data);
+
+      if (memberList.length === 0) {
+        bodyHtml = '<tr class="tBody">';
+        bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
+        bodyHtml += '</tr>';
+        $("#appendBody").empty().append(bodyHtml);
+      } else {
+        bodyHtml = "";
+        $.each(memberList, function(index, item) {
+          bodyHtml += '<tr class="tBody">';
+          bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
+          bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
+          bodyHtml += '<td class="unm">' + item.unm + "</td>";
+          bodyHtml += '<td class="birth">' + item.birth + "</td>";
+          bodyHtml += '<td class="sex">' + item.sex + "</td>";
+          bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
+          bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
+          bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
+          bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
+          bodyHtml += '<td class="project"><a href="#" class="button small">보기 (' + item.uno + ')</a></td>/tr>';
+        });
+
+        $("#appendBody").empty().append(bodyHtml);
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error(error);
+    }
+  });
+
+  currentPage = 1;
+  loadData();
 }
 
-$("input[type='reset']").click(function() {
+//초기화
+loadData();
+
+//검색 버튼 클릭 이벤트에 search2 함수 바인딩
+$("input[type='button']").click(search2);
+
+function createPaginationUI() {
+  // 이전 페이지로 이동하는 버튼 생성
+  const prevButton = document.createElement('button');
+  prevButton.innerText = '이전';
+  prevButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadData();
+    }
+  });
+
+  // 다음 페이지로 이동하는 버튼 생성
+  const nextButton = document.createElement('button');
+  nextButton.innerText = '다음';
+  nextButton.addEventListener('click', () => {
+    if (currentPage < totalPage) {
+      currentPage++;
+      loadData();
+    }
+  });
+
+  // 페이지 버튼 생성 로직 작성
+  const paginationContainer = document.getElementById('pagination');
+  paginationContainer.innerHTML = '';
+  paginationContainer.appendChild(prevButton);
+  paginationContainer.appendChild(nextButton);
+}
+
+function loadData() {
+  // 서버에 현재 페이지에 해당하는 데이터 요청을 보내고, 응답을 받아서 처리하는 로직 작성
+  const requestData = {
+    pageNum: currentPage,
+    amount: pageSize
+  };
+
+  // AJAX 요청
+  $.ajax({
+    url: '/board/search', // 실제 요청 주소를 적절히 수정해야 합니다.
+    type: 'POST',
+    data: JSON.stringify(requestData),
+    contentType: 'application/json',
+    success: function(response) {
+      // 서버로부터 받은 응답을 처리하는 로직을 작성해야 합니다.
+      var memberList = response.memberList;
+
+      // TODO: 받은 데이터를 사용하여 표시하는 로직 작성
+      if (memberList.length === 0) {
+        let bodyHtml = '<tr class="tBody">';
+        bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
+        bodyHtml += '</tr>';
+        $("#appendBody").empty().append(bodyHtml);
+      } else {
+        let bodyHtml = "";
+        $.each(memberList, function(index, item) {
+          bodyHtml += '<tr class="tBody">';
+          bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
+          bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
+          bodyHtml += '<td class="unm">' + item.unm + "</td>";
+          bodyHtml += '<td class="birth">' + item.birth + "</td>";
+          bodyHtml += '<td class="sex">' + item.sex + "</td>";
+          bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
+          bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
+          bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
+          bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
+          bodyHtml += '<td class="project"><a href="#" class="button small">보기 (' + item.uno + ')</a></td>/tr>';
+        });
+
+        $("#appendBody").empty().append(bodyHtml);
+      }
+
+      // 페이지네이션 UI 갱신
+      totalPage = Math.ceil(response.totalCount / pageSize);
+      createPaginationUI();
+    },
+    error: function(error) {
+      console.error('Error:', error);
+    }
+  });
+}
+
+
+	$("input[type='reset']").click(function() {
 	// 검색 결과 영역 초기화
-	$("#appendBody").empty();
+		$("#appendBody").empty();
 	
 	// 검색 조건 초기화
-	$("#unmInput").val("");
-	$("#jobSkillInput").val("");
-	$("#inoffiStsInput").val("");
-	$("#dateInput1").val("");
-	$("#dateInput2").val("");
+		$("#unmInput").val("");
+		$("#jobSkillInput").val("");
+		$("#inoffiStsInput").val("");
+		$("#dateInput1").val("");
+		$("#dateInput2").val("");
 });
+</script>
+	
+<script>
 
-/*
-function updateList(response) {
-	  console.log(response);
-	  
-	  var memberList = response.memberList; // JSON 형식의 데이터를 그대로 memberArray에 할당
-      
-	  console.log(memberList);
-	  
-	  var template = "";
+function limitDateInput() {
+	  // 시작 날짜 입력 요소
+	  var startDateInput = document.getElementById("dateInput1");
+	  // 종료 날짜 입력 요소
+	  var endDateInput = document.getElementById("dateInput2");
 
-	  memberList.forEach (fuction (member) {
-	    template += `
-	      <tr class="tBody">
-	        <td class="ckNum"><input name="code" type="checkbox" ' + member.uno + '></td>
-	        <td class="uno"><a href="/board/modify' + member.uno +'">'+ member.uno + '</a></td>
-	        <td class="unm">'+ member.unm +'</td>
-	        <td class="birth">'+ member.birth +'</td>
-	        <td class="sex">'+ member.sex +'</td>
-	        <td class="jobRank">'+ member.jobRank +'</td>
-	        <td class="jobSkill">'+ member.jobSkill +'</td>
-	        <td class="inoffiSts">'+ member.inoffiSts +'</td>
-	        <td class="entrDate">'+ member.entrDate +'</td>
-	        <td class="project"><a href="#" class="button small">보기 (${uno})</a></td>
-	      </tr>
-	    `;
-	  });
+	  // 현재 날짜
+	  var currentDate = new Date();
 
-	  if (template === "") {
-	    template = "<tr><td colspan='10'>검색 결과가 없습니다.</td></tr>";
+	  // 입력된 년도, 월, 일
+	  var startYear = parseInt(startDateInput.value.substr(0, 4));
+	  var startMonth = parseInt(startDateInput.value.substr(5, 2));
+	  var startDay = parseInt(startDateInput.value.substr(8, 2));
+	  var endYear = parseInt(endDateInput.value.substr(0, 4));
+	  var endMonth = parseInt(endDateInput.value.substr(5, 2));
+	  var endDay = parseInt(endDateInput.value.substr(8, 2));
+
+	  // 현재 년도와 월
+	  var currentYear = currentDate.getFullYear();
+	  var currentMonth = currentDate.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더해줌
+
+	  // 입력된 년도가 현재 년도보다 큰 경우, 현재 년도까지만 입력 가능
+	  if (startYear > currentYear) {
+	    startDateInput.value = currentDate.toISOString().split("T")[0];
+	    startYear = currentYear;
+	  }
+	  if (endYear > currentYear) {
+	    endDateInput.value = currentDate.toISOString().split("T")[0];
+	    endYear = currentYear;
 	  }
 
-	  // 테이블에 템플릿 추가
-	  $("tbody").html(template);
+	  // 입력된 월이 현재 월보다 큰 경우, 현재 월로 변경
+	  if (startYear === currentYear && startMonth > currentMonth) {
+	    startDateInput.value = currentYear + "-" + ("0" + currentMonth).slice(-2) + "-" + ("0" + startDay).slice(-2);
+	    startMonth = currentMonth;
+	  }
+	  if (endYear === currentYear && endMonth > currentMonth) {
+	    endDateInput.value = currentYear + "-" + ("0" + currentMonth).slice(-2) + "-" + ("0" + endDay).slice(-2);
+	    endMonth = currentMonth;
+	  }
+
+	  // 입력된 월의 마지막 날짜 가져오기
+	  var startMonthLastDay = new Date(startYear, startMonth, 0).getDate();
+	  var endMonthLastDay = new Date(endYear, endMonth, 0).getDate();
+
+	  // 2월의 마지막 날짜 처리
+	  if (startMonth === 2 && startDay > startMonthLastDay) {
+	    if ((startYear % 4 === 0 && startYear % 100 !== 0) || startYear % 400 === 0) {
+	      startDateInput.value = startYear + "-" + ("0" + startMonth).slice(-2) + "-" + ("0" + startMonthLastDay).slice(-2);
+	    } else {
+	      startDateInput.value = startYear + "-" + ("0" + startMonth).slice(-2) + "-28";
+	    }
+	  }
+
+	  if (endMonth === 2 && endDay > endMonthLastDay) {
+	    if ((endYear % 4 === 0 && endYear % 100 !== 0) || endYear % 400 === 0) {
+	      endDateInput.value = endYear + "-" + ("0" + endMonth).slice(-2) + "-" + ("0" + endMonthLastDay).slice(-2);
+	    } else {
+	      endDateInput.value = endYear + "-" + ("0" + endMonth).slice(-2) + "-28";
+	    }
+	  }
 	}
 
-	  function search(e) {
-		  e.preventDefault();
-		  console.log("조회 버튼이 클릭되었습니다.");
-
-		  // 검색 조건 가져오기
-		  var formData = {
-		    name: $("#nameInput").val(),
-		    jobSkill: $("#jobSkillInput").val(),
-		    inoffiSts: $("#inoffiStsInput").val(),
-		    startDate: $("#dateInput1").val(),
-		    endDate: $("#dateInput2").val()
-		  };
-
-		  // AJAX 요청 보내기
-		  $.ajax({
-		    url: "/board/search",
-		    type: "POST",
-		    contentType: "application/json", // 요청 데이터의 Content-Type 설정
-		    data: JSON.stringify(formData), // JavaScript 객체를 JSON 문자열로 변환하여 전달
-		    success: function(response) {
-		      console.log(response);
-		      // 리스트 화면 업데이트
-		      updateList(response);
-		    },
-		    error: function(xhr, status, error) {
-		      console.error(error);
-		    }
-		  });
-		}
-	  
-*/
 </script>
 </html>

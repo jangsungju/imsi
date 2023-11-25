@@ -1,6 +1,8 @@
 package com.example.ex05.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -111,11 +114,13 @@ public class BoardController {
 
 	@PostMapping("/search")
 	@ResponseBody
-	public List<MemberDTO> search(@RequestBody MemberDTO formData){
+	public Map<String, Object> search(@RequestBody MemberDTO dataForm, Model model){
+
+		Map<String, Object> map = new HashMap<>();
+		log.info("검색관련 조건 : " + dataForm);
 		
-		log.info("검색관련 조건 : " + formData);
-		
-		
+		int pageNum = dataForm.getPageNum();
+		int amount = dataForm.getAmount();
 //	    안쓸꺼 뽑아서 뭐함	
 //		String unm = formData.getUnm();
 //		String jobSkill = formData.getJobSkill();
@@ -124,13 +129,13 @@ public class BoardController {
 //		String endDate = formData.getEndDate();
 		
 		
-		List<MemberDTO> memberList = memberService.search(formData);
+		List<MemberDTO> memberList = memberService.search(dataForm);
+		map.put("memberList", memberList);
 		
-		
-		int totalCount = memberService.getTotalCount(formData);// 전체 데이터 개수 조회
+		int totalCount = memberService.getTotalCount(dataForm);// 전체 데이터 개수 조회
 	    
 	    log.info(" total :" + totalCount); //전체 데이터 개수 확인
-	    
+	    map.put("totalCount", totalCount);
 //	    Criteria criteria = new Criteria();
 //	    int endPage = (int)(Math.ceil(criteria.getPageNum()/(double)criteria.getAmount())) * criteria.getAmount();
 //	    int realEnd  = (int) Math.ceil( totalCount * 1.0 / criteria.getAmount());
@@ -146,7 +151,7 @@ public class BoardController {
 		
 		*/
 		
-		return memberList;
+		return map;
 	}
 	
 	

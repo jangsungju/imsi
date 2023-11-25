@@ -11,8 +11,8 @@ import com.example.ex05.domain.vo.PageDTO;
 @Service
 public interface MemberService {
 	
-	public List<MemberDTO> search(MemberDTO dateForm);
+	public List<MemberDTO> search(MemberDTO searchRequest);
 	
-	public int getTotalCount(MemberDTO dateForm);
+	public int getTotalCount(MemberDTO searchRequest);
 
 }

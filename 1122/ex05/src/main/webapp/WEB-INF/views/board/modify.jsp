@@ -38,8 +38,9 @@ body {
 									<td colspan="2" rowspan="4">사진<input type="file"
 										name="photo"></td>
 									<td>사번</td>
-									<td><input type="text" name="uno" value="${member.uno}"
-										readonly></td>
+									<td>
+									<input type="text" name="uno" value="${member.uno}"
+										readonly style="background-color: #f2f2f2; border: 1px solid #ccc; color: #666;"></td>
 									<td>이 름<span class="redFont">*</span></td>
 									<td><input type="text" name="unm" value="${member.unm}"
 										readonly></td>

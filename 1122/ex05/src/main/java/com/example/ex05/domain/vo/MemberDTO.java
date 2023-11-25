@@ -35,4 +35,7 @@ public class MemberDTO {
 	private String endDate;
 	
 	private int totalCount;
+	private int pageNum;
+	private int amount;
+	private int rn;
 }

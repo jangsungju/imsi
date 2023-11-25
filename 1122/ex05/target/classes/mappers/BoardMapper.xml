@@ -54,9 +54,29 @@
 		MBLNO, EMAILADDR, DELETE_COL FROM MEMBER WHERE UNO = #{UNO} </select> -->
 	
 	<select id="read" resultType="boardVO">
-		SELECT UNO, UNM, PWD, TO_CHAR(birth, 'YYYY-MM-DD') AS BIRTH, PHOTO, SEX, TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE, JOBRANK, JOBSKILL, DEVPT,
-		INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL FROM MEMBER WHERE UNO =
-		#{UNO}
+		SELECT 
+		M.UNO as UNO
+		, M.UNM AS UNM
+		, M.PWD AS PWD
+		, TO_CHAR(M.birth, 'YYYY-MM-DD') AS BIRTH
+		, M.PHOTO AS PHOTO
+		, SE.DTL_CDNM AS SEX
+		, TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE
+		, JR.DTL_CDNM AS JOBRANK
+		, JS.DTL_CDNM AS JOBSKILL
+		, DP.DTL_CDNM AS DEVPT
+		, IO.DTL_CDNM AS INOFFI_STS
+		, M.MBLNO AS MBLNO
+		, M.EMAILADDR AS EMAILADDR
+		, M.DELETE_COL AS DELETE_COL
+	FROM EX00.MEMBER M
+		JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
+		JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
+		JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
+		JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
+		JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
+		JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
+    WHERE UNO =	#{UNO}
 	</select>
 
 	<delete id="delete">
