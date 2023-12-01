@@ -38,4 +38,9 @@ public class MemberDTO {
 	private int pageNum;
 	private int amount;
 	private int rn;
-}
+	private int startPage;
+	private int endPage;
+	private int realEnd;
+	private boolean prev, next; 
+}   
+    

@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,31 +48,6 @@ Task           URL            Method          Parameter               Form      
 
 
 
-//	@InitBinder
-//	public void initBinder(WebDataBinder binder) {
-//	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//	    dateFormat.setLenient(false);
-//	    binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, false));
-//	}
-	
-	
-	
-//	@InitBinder
-//	public void initBinder(WebDataBinder binder) {
-//	    binder.registerCustomEditor(Date.class, new CustomPropertyEditorSupport() {
-//	        public void setAsText(String text) throws IllegalArgumentException {
-//	            try {
-//	                Date date = new Date(new SimpleDateFormat("yyyy-MM-dd").parse(text).getTime());
-//	                setValue(date);
-//	            } catch(ParseException e) {
-//	                throw new IllegalArgumentException(e);
-//	            }
-//	        }
-//	    });
-//	}
-
-
-
 */
 
 @Controller
@@ -82,25 +60,31 @@ public class BoardController {
 	
 	@Autowired
 	private MemberService memberService;
-		
+
+	@Autowired
+	private MemberDTO memberDTO;
+	
 	@GetMapping("/main")
 	public void main() {
 		log.info("/main................");
 	}
-	
-	/*
-	 * @GetMapping("/list") public void list(Model model) {
-	 * log.info("/getlist................");
-	 * 
-	 * model.addAttribute("memberList", boardService.getList());
-	 * 
-	 * }
-	 */
+
 	
 	@RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
-	 public void list() {
-		log.info("/listpage................");
+	public void list(@ModelAttribute("searchCondition") MemberDTO searchCondition, Model model) {
+	    log.info("/listpage................");
 
+	    // 추가된 로그
+	    log.info("dataForm received in list method: {}"+ searchCondition);
+
+	    log.info("searchCondition===============: {}"+ searchCondition);
+
+	    // searchCondition이 null이 아닌 경우 모델에 추가
+	    if (searchCondition != null) {
+	        model.addAttribute("searchCondition", searchCondition);
+	    }
+
+	    // ... (기존의 리스트 로직 및 모델에 필요한 데이터 추가)
 	}
 
 //	public String postList(Model model) {
@@ -108,71 +92,115 @@ public class BoardController {
 //
 //	    List<MemberDTO> memberList = memberService.search();
 //	    model.addAttribute("memberList", memberList);
+//	 @RequestParam(name = "amount", defaultValue = "10") int amount,
+//	   @RequestParam(name = "pageNum", defaultValue = "1") int pageNum,
+//	   @RequestParam(name = "inoffiSts", defaultValue = "") String inoffiSts,
+//	   @RequestParam(name = "unm", defaultValue ="") String unm,
+//	   @RequestParam(name = "jobRank",defaultValue ="") String jobRank,
+//	   @RequestParam(name = "startDate",defaultValue ="") String startDate,
+//	   @RequestParam(name = "endDate",defaultValue ="") String endDate,
+// Model model
+//	
+//	// 필요한 정보를 model에 담아서 view로 전달
+// model.addAttribute("amount", amount);
+// model.addAttribute("pageNum", pageNum);
+// model.addAttribute("inoffiSts", inoffiSts);
+// model.addAttribute("startDate", startDate);
+// model.addAttribute("endDate", endDate);
+//	
+//	
+// return "/board/list";
+	
+	
+	
 //
 //	    return "list";
 //	}
 
 	@PostMapping("/search")
 	@ResponseBody
-	public Map<String, Object> search(@RequestBody MemberDTO dataForm, Model model){
-
+	public ResponseEntity<Map<String, Object>> search(@RequestBody MemberDTO dataForm, Model model, HttpSession session){
+		
+		
 		Map<String, Object> map = new HashMap<>();
 		log.info("검색관련 조건 : " + dataForm);
 		
-		int pageNum = dataForm.getPageNum();
-		int amount = dataForm.getAmount();
-//	    안쓸꺼 뽑아서 뭐함	
-//		String unm = formData.getUnm();
-//		String jobSkill = formData.getJobSkill();
-//		String inoffiSts = formData.getInoffiSts();
-//		String startDate = formData.getStartDate();
-//		String endDate = formData.getEndDate();
 		
+		memberDTO.setPageNum(dataForm.getPageNum());
+		memberDTO.setAmount(dataForm.getAmount());
+		
+		log.info("=====================처음 시작 할때 설정된 pageNum :===================================" + memberDTO.getPageNum());
 		
 		List<MemberDTO> memberList = memberService.search(dataForm);
 		map.put("memberList", memberList);
 		
 		int totalCount = memberService.getTotalCount(dataForm);// 전체 데이터 개수 조회
+		
+		memberDTO.setTotalCount(totalCount);
+   
+		int pageSize = dataForm.getAmount();
+		int pagingSize = 10;
+		
+		// 1/10.0 =  0.1 math =  1 *10 = 10  , 14/10.0 = 1.4 =  math 2 *10 = 20 
+	    int endPage = ((int) Math.ceil(memberDTO.getPageNum() / (double)pagingSize)) * pagingSize;
+	    // 10 - (10-1) = 1 1페이지 시작
+	    int startPage = endPage - (pagingSize - 1);
+	    // 136 /10 = 13... 음 안되 14페이지까지 나와야함  136.0 /10 13.6 = 14
+	    int realEnd = (int) Math.ceil(totalCount / (double) pageSize);//최대 페이지 갯수 토탈페이지
 	    
-	    log.info(" total :" + totalCount); //전체 데이터 개수 확인
+	    boolean prev = startPage > 1;
+	    
+	    boolean next = endPage < realEnd;
+	    	    
+	    //1~10 1단위 이전과 다음 버튼은 10페이지씩 넘어가게 한다
+		//11~20
+		//20~30
+		//...이전단위가 있을경우 1은 없음
+	    if (realEnd < endPage) {
+	    	//다음 단위가 있을경우 
+	        endPage = realEnd;
+	    
+	    }
+	    //조금더 구현해 보고 싶은거 한페이지에 5개씩 정보가 뿌려지지만 번호는 1 2 3 4 5 ...10까지 나오게 하기
+
+	    memberDTO.setPageNum(memberDTO.getPageNum());
+        
+	    int pageNum= memberDTO.getPageNum();
+	    
+		log.info("=====================이거는 이제 한번 갔다왔을때 pageNum :===================================" + memberDTO.getPageNum());
+	    
+		// 세션에 검색 조건 저장
+	    session.setAttribute("searchCondition", dataForm);
+	    
+	    memberDTO.setStartPage(startPage);
+	    memberDTO.setEndPage(endPage);
+	    memberDTO.setRealEnd(realEnd);
+	    memberDTO.setPrev(prev);
+	    memberDTO.setNext(next);
+	    
+	    
+	   
+		    
+		    log.info("dataForm===============================================" + dataForm);
+		    // 로그로 확인
+	        
+	    
+	    log.info("total: " + totalCount); // 전체 데이터 개수 확인
+	    
 	    map.put("totalCount", totalCount);
-//	    Criteria criteria = new Criteria();
-//	    int endPage = (int)(Math.ceil(criteria.getPageNum()/(double)criteria.getAmount())) * criteria.getAmount();
-//	    int realEnd  = (int) Math.ceil( totalCount * 1.0 / criteria.getAmount());
-//	    		
-	    		
-		/*
-		// formData 여기안에 너가 위에서 뽑은것처럼 unm, jobSkill 등등의 값이 들어있고 그걸 method에 넘겨줘야 활용함
-		if (unm == "" && jobSkill == "" && inoffiSts == "" && startDate == "" && endDate == "") {
-			
-			//									요기
-			memberList = memberService.search(formData);
-		} 
-		
-		*/
-		
-		return map;
+	    map.put("endPage", endPage);
+	    map.put("startPage", startPage);
+	    map.put("realEnd", realEnd);
+	    map.put("prev", prev);
+	    map.put("next", next);
+        map.put("pageNum", pageNum);
+        map.put("realEnd", realEnd);
+	    
+        return new ResponseEntity<>(map, HttpStatus.OK);
+	
 	}
-	
-	
-//	@PostMapping("/search")
-//	@ResponseBody
-//	public List<MemberDTO> search(@RequestBody SearchRequest searchRequest){
-//		
-//		log.info("/search...........................");
-//	    log.info("검색정보 들어오냐????? : ");
-//		
-//		
-//		 List<MemberDTO> searchResult = null;
-//		 
-//		 if (searchRequest == null) {
-//		        searchResult = memberService.search();
-//		    }
-//		 log.info("Search result: {}");
-//		    
-//		    return searchResult;
-////		    model.addAttribute("memberList", memberList);
-//	}
+		
+
 	
 	@PostMapping("/register")
 	public String register(MemberVO memberVO, RedirectAttributes rttr) {
@@ -181,6 +209,14 @@ public class BoardController {
 		boardService.register(memberVO);
 		
 		rttr.addFlashAttribute("uno", memberVO.getUno());
+		rttr.addFlashAttribute("amount", memberDTO.getAmount());
+		rttr.addFlashAttribute("pageNum", memberDTO.getPageNum());
+		rttr.addFlashAttribute("inoffiSts", memberDTO.getInoffiSts());
+		rttr.addFlashAttribute("jobSkill", memberDTO.getJobSkill());
+		rttr.addFlashAttribute("unm", memberDTO.getUnm());
+		rttr.addFlashAttribute("startDate", memberDTO.getStartDate());
+		rttr.addFlashAttribute("endDate", memberDTO.getEndDate());
+		
 
 //		flash라는 영역은 session에 생기고, redirect로 전송 할 때 request영역이 초기화된다.
 //		초기화 되기 전에 flash영역에 데이터를 저장해 놓고, 초기화된 후 flash영역에서 데이터를 가져온다.
@@ -248,7 +284,22 @@ public class BoardController {
 	}
 	
 	@GetMapping("/register")
-	public void register() {}
+	public void register(MemberDTO memberDTO) {
+		
+	}
 	
 	
+
+//	private void addSearchAttributes(RedirectAttributes rttr) {
+//		
+//	    rttr.addFlashAttribute("amount", memberDTO.getAmount());
+//	    rttr.addFlashAttribute("pageNum", memberDTO.getPageNum());
+//	    rttr.addFlashAttribute("inoffiSts", memberDTO.getInoffiSts());
+//	    rttr.addFlashAttribute("jobSkill", memberDTO.getJobSkill());
+//	    rttr.addFlashAttribute("unm", memberDTO.getUnm());
+//	    rttr.addFlashAttribute("startDate", memberDTO.getStartDate());
+//	    rttr.addFlashAttribute("endDate", memberDTO.getEndDate());
+//	
+//	    
+//	}	
 }

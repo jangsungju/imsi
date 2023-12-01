@@ -5,47 +5,56 @@
 
 	<!-- parameterType은 내가 화면에서 전달받아서 활용할 파라미터 모음집 -->
 <select id="search" parameterType="map" resultType="memberDTO">
-SELECT * FROM (
-        SELECT 
-            ROWNUM AS RN,
+    SELECT
+        RN,
+        UNO,
+        UNM,
+        TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH,
+        SEX,
+        TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE,
+        JOBRANK,
+        JOBSKILL,
+        DEVPT,
+        INOFFI_STS
+    FROM (
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY ENTRDATE DESC) AS RN,
             M.UNO AS UNO,
             M.UNM AS UNM,
-            TO_CHAR(M.BIRTH, 'YYYY-MM-DD') AS BIRTH,
-            SE.DTL_CDNM AS SEX,
-            TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE,
-            JR.DTL_CDNM AS JOBRANK,
-            JS.DTL_CDNM AS JOBSKILL,
-            DP.DTL_CDNM AS DEVPT,
-            IO.DTL_CDNM AS INOFFI_STS
-        FROM EX00.MEMBER M
+            M.BIRTH AS BIRTH,
+            M.SEX AS SEX,
+            M.ENTRDATE AS ENTRDATE,
+            M.JOBRANK AS JOBRANK,
+            M.JOBSKILL AS JOBSKILL,
+            M.DEVPT AS DEVPT,
+            M.INOFFI_STS AS INOFFI_STS
+        FROM ex00.member M
             JOIN dtl_code SE ON M.SEX = SE.DTL_CD AND SE.CODE = 'D100'
-            JOIN dtl_code JR ON M.JOBRANK = JR.DTL_CD  AND JR.CODE = 'D200'
-            JOIN dtl_code JS ON M.JOBSKILL = JS.DTL_CD  AND JS.CODE = 'D300'
-            JOIN dtl_code DP ON M.DEVPT = DP.DTL_CD  AND DP.CODE = 'D400'
-            JOIN dtl_code IO ON M.INOFFI_STS = IO.DTL_CD  AND IO.CODE = 'D500'
-            JOIN dtl_code DL ON M.DELETE_COL = DL.DTL_CD AND DL.CODE = 'D800'
+            JOIN dtl_code JR ON M.JOBRANK = JR.DTL_CD AND JR.CODE = 'D200'
+            JOIN dtl_code JS ON M.JOBSKILL = JS.DTL_CD AND JS.CODE = 'D300'
+            JOIN dtl_code DP ON M.DEVPT = DP.DTL_CD AND DP.CODE = 'D400'
+            JOIN dtl_code IO ON M.INOFFI_STS = IO.DTL_CD AND IO.CODE = 'D500'
         <where>
-       <if test="unm != null and unm != ''">
-			AND UNM LIKE '%' || #{unm} || '%'
-		</if>
-		<if test="inoffiSts != null and inoffiSts != ''">
-			AND INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
-		</if>
-		<if test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
-			AND ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-		</if>
-		<if test="jobSkill != null and jobSkill != ''">
-			AND JOBSKILL LIKE '%' || #{jobSkill} || '%'
-		</if>
-		 <if test="(unm == null or unm == '') and (inoffiSts == null or inoffiSts == '') and (startDate == null or startDate == '') and (endDate == null or endDate == '') and (jobSkill == null or jobSkill == '')">
-      		AND 1 = 0
-    	 </if>
-    </where>
-        ORDER BY M.ENTRDATE DESC
-    ) WHERE RN BETWEEN #{pageNum} AND #{amount}
+            <if test="unm != null and unm != ''">
+                AND M.UNM LIKE '%' || #{unm} || '%'
+            </if>
+            <if test="inoffiSts != null and inoffiSts != ''">
+                AND M.INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
+                AND M.ENTRDATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="jobSkill != null and jobSkill != ''">
+                AND M.JOBSKILL LIKE '%' || #{jobSkill} || '%'
+            </if>
+            <if test="(unm == null or unm == '') and (inoffiSts == null or inoffiSts == '') and (startDate == null or startDate == '') and (endDate == null or endDate == '') and (jobSkill == null or jobSkill == '')">
+    			AND 1 = 0
+   		    </if>
+        </where>
+          ORDER BY ENTRDATE DESC
+    ) M
+  WHERE RN BETWEEN ((#{pageNum} - 1) * #{amount}) + 1 AND #{pageNum} * #{amount}
 </select>
-
-
 
 <!-- <select id="searchWithPage" parameterType="map" resultType="memberDTO" >
 	SELECT 
@@ -89,6 +98,9 @@ SELECT * FROM (
 		<if test="jobSkill != null and jobSkill != ''">
 			OR JOBSKILL LIKE '%' || #{jobSkill} || '%'
 		</if>
+		<if test="unm == null and unm =='' and inoffiSts == null and inoffiSts == '' and startDate == null and startDate =='' and endDate == null and endDate =='' and jobSkill == null and jobSkill =='' and (pageNum == null or amount == null)">
+   			 AND 1 = 0
+ 		 	</if>
 	</where>
 	ORDER BY M.ENTRDATE DESC
 	OFFSET #{pageDTO.startPage} ROWS
@@ -124,8 +136,8 @@ SELECT * FROM (
 			AND JOBSKILL LIKE '%' || #{jobSkill} || '%'
 		</if>
 		 <if test="(unm == null or unm == '') and (inoffiSts == null or inoffiSts == '') and (startDate == null or startDate == '') and (endDate == null or endDate == '') and (jobSkill == null or jobSkill == '')">
-      		AND 1 = 0
-    	 </if>
+    			AND 1 = 0
+   		 </if>
     </where>
 </select>
 

@@ -14,6 +14,23 @@ body {
 	transform: scale(0.8);
 	margin-top: -50px;
 }
+
+input[readonly] {
+    background-color: #f2f2f2; /* 읽기 전용 배경색 지정 */
+    border: 3px solid #b3e0f2; /* 테두리 스타일 지정 */
+    color: #666; /* 글자색 지정 */
+    cursor: not-allowed; /* 커서 모양 변경 */
+}
+
+/* 수정창에서 읽기 전용 상태에서 포커스 시 스타일 지정 */
+input[readonly]:focus {
+    outline: none; /* 포커스 효과 제거 */
+    cursor: not-allowed; /* 커서 모양 변경 */
+    background-color: #f2f2f2; /* 포커스 시 배경색 유지 */
+    border: 1px solid #ccc; /* 포커스 시 테두리 스타일 유지 */
+    color: #666; /* 포커스 시 글자색 유지 */
+}
+
 </style>
 </head>
 <body class="is-preload">
@@ -40,8 +57,8 @@ body {
 									<td>사번</td>
 									<td>
 									<input type="text" name="uno" value="${member.uno}"
-										readonly style="background-color: #f2f2f2; border: 1px solid #ccc; color: #666;"></td>
-									<td>이 름<span class="redFont">*</span></td>
+										readonly></td>
+									<td>이 름</td>
 									<td><input type="text" name="unm" value="${member.unm}"
 										readonly></td>
 								</tr>
