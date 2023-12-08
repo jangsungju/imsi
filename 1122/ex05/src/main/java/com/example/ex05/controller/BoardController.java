@@ -22,11 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.ex05.domain.vo.Criteria;
 import com.example.ex05.domain.vo.MemberDTO;
+import com.example.ex05.domain.vo.MemberProjectDTO;
 import com.example.ex05.domain.vo.MemberVO;
-import com.example.ex05.domain.vo.PageDTO;
-import com.example.ex05.domain.vo.SearchRequest;
 import com.example.ex05.service.BoardService;
 import com.example.ex05.service.MemberService;
 
@@ -71,20 +69,9 @@ public class BoardController {
 
 	
 	@RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
-	public void list(@ModelAttribute("searchCondition") MemberDTO searchCondition, Model model) {
+	public void list() {
 	    log.info("/listpage................");
 
-	    // 추가된 로그
-	    log.info("dataForm received in list method: {}"+ searchCondition);
-
-	    log.info("searchCondition===============: {}"+ searchCondition);
-
-	    // searchCondition이 null이 아닌 경우 모델에 추가
-	    if (searchCondition != null) {
-	        model.addAttribute("searchCondition", searchCondition);
-	    }
-
-	    // ... (기존의 리스트 로직 및 모델에 필요한 데이터 추가)
 	}
 
 //	public String postList(Model model) {
@@ -119,7 +106,7 @@ public class BoardController {
 
 	@PostMapping("/search")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> search(@RequestBody MemberDTO dataForm, Model model, HttpSession session){
+	public ResponseEntity<Map<String, Object>> search(@RequestBody MemberDTO dataForm, Model model){
 		
 		
 		Map<String, Object> map = new HashMap<>();
@@ -169,20 +156,14 @@ public class BoardController {
 	    
 		log.info("=====================이거는 이제 한번 갔다왔을때 pageNum :===================================" + memberDTO.getPageNum());
 	    
-		// 세션에 검색 조건 저장
-	    session.setAttribute("searchCondition", dataForm);
-	    
 	    memberDTO.setStartPage(startPage);
 	    memberDTO.setEndPage(endPage);
 	    memberDTO.setRealEnd(realEnd);
 	    memberDTO.setPrev(prev);
 	    memberDTO.setNext(next);
 	    
-	    
-	   
 		    
-		    log.info("dataForm===============================================" + dataForm);
-		    // 로그로 확인
+	    log.info("dataForm===============================================" + dataForm);
 	        
 	    
 	    log.info("total: " + totalCount); // 전체 데이터 개수 확인
@@ -239,11 +220,11 @@ public class BoardController {
 	@GetMapping({"/read","/modify"})
     public void read(Long uno,HttpServletRequest request,Model model) {
 		
+		log.info("read~~~~modify~~~~~");
 		String url = request.getRequestURI();
 		log.info(url.substring(url.lastIndexOf("/")) + " : " + uno);
 		
 		model.addAttribute("member", boardService.get(uno));
-		
 		
 		
 	}
@@ -267,6 +248,7 @@ public class BoardController {
 	public String modify(@ModelAttribute("memberVO") MemberVO memberVO, RedirectAttributes rttr) {
 	    log.info("/modify : " + memberVO);
 
+	    log.info("=======================sex=======================:" + memberVO.getSex());
 	    log.info("/modify birth : " + memberVO.getBirth());
 	    log.info("/modify entrdate :" + memberVO.getEntrDate());
 //	    // Use memberVO.getBirth() and memberVO.getEntrDate() directly as Date objects
@@ -287,19 +269,99 @@ public class BoardController {
 	public void register(MemberDTO memberDTO) {
 		
 	}
-	
-	
 
-//	private void addSearchAttributes(RedirectAttributes rttr) {
+	@PostMapping("/userProjcet")
+	public void userProject(@RequestParam Long uno,Model model) {
+		
+		log.info("=========================userProject================");
+		
+		log.info("uno" + uno);
+		
+		model.addAttribute("userProject", memberService.readUserProject(uno));
+		
+		
+		}
+	
+//	@GetMapping("/userProjcet")
+//	public void userProject(Long uno,HttpServletRequest request,Model model) {
 //		
-//	    rttr.addFlashAttribute("amount", memberDTO.getAmount());
-//	    rttr.addFlashAttribute("pageNum", memberDTO.getPageNum());
-//	    rttr.addFlashAttribute("inoffiSts", memberDTO.getInoffiSts());
-//	    rttr.addFlashAttribute("jobSkill", memberDTO.getJobSkill());
-//	    rttr.addFlashAttribute("unm", memberDTO.getUnm());
-//	    rttr.addFlashAttribute("startDate", memberDTO.getStartDate());
-//	    rttr.addFlashAttribute("endDate", memberDTO.getEndDate());
-//	
-//	    
-//	}	
+//		log.info("=========================userProject================");
+//		
+//		String url = request.getRequestURI();
+//		
+//		log.info(url.substring(url.lastIndexOf("/")) + " : " + uno);
+//		
+//		model.addAttribute("userProject", memberService.readUserProject(uno));
+//		
+//		
+//		}
+	
+	
+	
+	@PostMapping("/changeUserProjects")
+	public ResponseEntity<Map<String, Object>> updateUserProject(@RequestBody List<MemberProjectDTO> projects) {
+	    log.info("========================updateUser============================");
+	    log.info("수정관련 조건들 확인하기 : " + projects);
+	    Map<String, Object> map = new HashMap<>();
+
+	    for (MemberProjectDTO project : projects) {
+	        if ("update".equals(project.getAction())) {
+	            // 수정 로직 수행
+	            log.info("수정 작업 실행~~~");
+	            boolean isSuccess = memberService.updateUserProject(project);
+
+	            if (isSuccess) {
+	                map.put("updateResult", "프로젝트가 성공적으로 수정되었습니다.");
+	            } else {
+	                map.put("updateResult", "프로젝트 수정에 실패했습니다.");
+	            }
+	        } else if ("delete".equals(project.getAction())) {
+	            // 삭제 로직 수행
+	            log.info("삭제 작업 실행~~~");
+	            boolean isSuccess = memberService.deleteUserProject(project.getUno(),project.getPjtNo());
+
+	            if (isSuccess) {
+	                map.put("deleteResult", "프로젝트가 성공적으로 삭제되었습니다.");
+	            } else {
+	                map.put("deleteResult", "프로젝트 삭제에 실패했습니다.");
+	            }
+	        }
+	    }
+
+	    return new ResponseEntity<>(map, HttpStatus.OK);
+	}
+	
+	
+	@PostMapping("/addUserProject")
+	public void addUserProjcet(@RequestParam Long uno, Model model) {
+		
+		log.info("=========================addUserProject================");
+		
+		log.info("===================uno==============:"+uno);
+	
+		model.addAttribute("uno", uno);
+		
+	}
+
+	@PostMapping("/searchNotAddUserProjects")
+	public ResponseEntity<Map<String, Object>> searchNotAddUserProjects(@RequestBody MemberProjectDTO searchNotAddUserProjects, Model model){
+		log.info("========================searchNotAddProject============================");
+	    
+		log.info("수정관련 조건들 확인하기 : " + searchNotAddUserProjects);
+	    
+	    Map<String, Object> map = new HashMap<>();
+		
+	    List<MemberProjectDTO> ProjectLists = memberService.notAddUserProject(searchNotAddUserProjects);
+	    
+	    
+	    map.put("projectLists", ProjectLists);
+		
+		
+		
+		
+		
+		return new ResponseEntity<>(map, HttpStatus.OK);
+	}
+	
+	
 }

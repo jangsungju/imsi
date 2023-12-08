@@ -47,7 +47,11 @@ public class MemberVO {
 	private String emailAddr;
 	private String deleteCol;
 	
-		
+
+	
+	
+	
+	
 	}
 	
 	

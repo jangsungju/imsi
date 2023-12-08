@@ -143,7 +143,7 @@ table th, table td {
 						<div style="text-align: right;">
 							<input type="button" value="등록" onclick="location.href = '/board/register'">
 							&nbsp;&nbsp;&nbsp; <input type="button" value="삭제">
-							&nbsp;&nbsp;&nbsp; <input type="reset" value="취소">
+							&nbsp;&nbsp;&nbsp; <input type="reset" value="취소" id="cancelButton">
 				</div>
 				</div>
 			</div>
@@ -159,239 +159,319 @@ table th, table td {
 <script>
 
 	const amount = 4; // 페이지당 표시할 데이터 개수
-	let pageNum =1; // 현재 페이지 번호
-	let endPage; // 전체 페이지 개수
+	let pageNum = 1; // 현재 페이지 번호
+	let endPage;
 	let startPage;
 	let currentPage;
 	let realEnd;
-	var prev, next;
+	let prev, next;
 	let formData = null; // 현재 검색 조건 데이터
-    let savedFormData = null;//검색조건 저장해서 넘길거
 
+
+	
+		function saveSearchCondition(formData) {
+		    
+			sessionStorage.setItem('searchCondition', JSON.stringify(formData));
+		    console.log("세션 스토리지에 검색 조건 저장: ", formData);
+		
+		}
+	
+	
+		function loadSearchCondition() {
+		    
+			const savedCondition = sessionStorage.getItem('searchCondition');
+		    return savedCondition ? JSON.parse(savedCondition) : null;
+		
+		}
+
+
+		//윈도우 로드 시 세션 스토리지에서 데이터 로드
+		window.onload = function () {
+		    
+			const savedCondition = loadSearchCondition();
+		    if (savedCondition) {
+		       
+		    	formData = savedCondition;
+		        loadData(formData);
+		    
+		    }
+		
+		};
+
+
+		function goPage(item) {
     
-   
-    
-    function goPage(item) {
-        if (item !== currentPage) {
-            let localPageNum = item;
-            currentPage = localPageNum;
-            formData.pageNum = localPageNum;
-
-            // 검색 조건이 저장된 경우 Flash 속성으로 추가
-            if (savedFormData) {
-                formData = savedFormData;
-            }
-
-            loadData(formData);
-        }
-    }
-    
-
-    function search2() {
-        let bodyHtml = "";
-        pageNum = 1;
-        let formDataArray = $('#searchForm').serializeArray();
+			if (item !== currentPage) {
+    	
+				currentPage = item;
+        		formData.pageNum = currentPage;
         
-        formData = {
-            amount: amount,
-            pageNum: pageNum
-        };
+        		console.log("검색 조건이 입력 된 것만 json에 추가하기 goPage", JSON.stringify(formData));
 
-        formDataArray.forEach(input => {
-            const value = input.value.trim();
-            if (value !== '') {
-                formData[input.name] = value;
-            }
-        });
+        		saveSearchCondition(formData);
+        		loadData(formData);
+			}
 
-        console.log("검색 조건이 입력 된 것만 json에 추가하기", JSON.stringify(formData));
+		}
 
-        $.ajax({
-            url: "/board/search",
-            type: "POST",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify(formData),
-            success: function (data) {
-                savedFormData = formData;
+		function search2() {
+    
+			let bodyHtml = "";
+    		pageNum = 1;
+    		let formDataArray = $('#searchForm').serializeArray();
 
-                console.log("검색조건 저장 확인 ", JSON.stringify(savedFormData));
+    		formData = {
+        
+    				amount: amount,
+        			pageNum: pageNum
+    
+    		};
 
-                console.log(data);
+    		formDataArray.forEach(input => {
+        	
+    			const value = input.value.trim();
+        			
+    			if (value !== '') {
+            
+    				formData[input.name] = value;
+        
+    			}
+    
+    		});
+
+    		console.log("검색 조건이 입력 된 것만 json에 추가하기 search", JSON.stringify(formData));
+
+    		saveSearchCondition(formData);
+
+    		$.ajax({
+        
+    			url: "/board/search",
+		        type: "POST",
+		        contentType: "application/json",
+		        dataType: "json",
+		        data: JSON.stringify(formData),
+		        success: function (data) {
+
+					console.log(data);
+            
+            		var memberList = data.memberList;
+					var totalCount = data.totalCount;
+
+		            if (memberList.length === 0) {
+        	        
+		            	bodyHtml = '<tr class="tBody">';
+		                bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
+		                bodyHtml += '</tr>';
+		                $("#appendBody").empty().append(bodyHtml);
+            		} else {
                 
-                var memberList = data.memberList;
-                var totalCount = data.totalCount;
+            			bodyHtml = "";
+                		$.each(memberList, function (index, item) {
+                    
+                			bodyHtml += '<tr class="tBody">';
+		                    bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
+		                    bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
+		                    bodyHtml += '<td class="unm">' + item.unm + "</td>";
+		                    bodyHtml += '<td class="birth">' + item.birth + "</td>";
+		                    bodyHtml += '<td class="sex">' + item.sex + "</td>";
+		                    bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
+		                    bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
+		                    bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
+		                    bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
+		                    bodyHtml += '<td class="project">';
+		                    bodyHtml += '<form action="/board/userProjcet" method="post" style="display: inline;">';
+		                    bodyHtml += '<input type="hidden" name="uno" value="' + item.uno + '">';
+		                    bodyHtml += '<button type="submit" class="button small">보기</button>';
+		                    bodyHtml += '</form>';
+		                    bodyHtml += '</td></tr>';
+                	
+                		});
 
-                if (memberList.length === 0) {
-                    bodyHtml = '<tr class="tBody">';
-                    bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
-                    bodyHtml += '</tr>';
-                    $("#appendBody").empty().append(bodyHtml);
-                } else {
-                    bodyHtml = "";
-                    $.each(memberList, function (index, item) {
-                        bodyHtml += '<tr class="tBody">';
-                        bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
-                        bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
-                        bodyHtml += '<td class="unm">' + item.unm + "</td>";
-                        bodyHtml += '<td class="birth">' + item.birth + "</td>";
-                        bodyHtml += '<td class="sex">' + item.sex + "</td>";
-                        bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
-                        bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
-                        bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
-                        bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
-                        bodyHtml += '<td class="project"><a href="#" class="button small">보기 (' + item.uno + ')</a></td>/tr>';
-                    });
+                	$("#appendBody").empty().append(bodyHtml);
+            
+            		}
 
-                    $("#appendBody").empty().append(bodyHtml);
-                }
+	           endPage = data.endPage;
+	           startPage = data.startPage;
+	           prev = data.prev;
+	           next = data.next;
+	           pageNum = data.pageNum;
+	           realEnd = data.realEnd;
 
-                endPage = data.endPage;
-                startPage = data.startPage;
-                prev = data.prev;
-                next = data.next;
-                pageNum = data.pageNum;
-                realEnd = data.realEnd;
+				console.log("endPage ======================== : ===================" + endPage);
+				console.log("pageNum ====================== : ================" + pageNum);
 
-                console.log("endPage ======================== : ===================" + endPage);
-                console.log("pageNum ====================== : ================" + pageNum);
+	            createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd);
 
-                createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd);
-            },
-            error: function (xhr, status, error) {
-                console.error(error);
-            }
-        });
-    }
+		        },
 
-    function loadData(formData) {
-        console.log("여기 loadData===================================");
-        console.log("뭐야 왜 실행 안되 나와?=============================="+formData.pageNum+"===========================");
+		        error: function (xhr, status, error) {
+            
+		        	console.error(error);
+        
+		        }
+    
+    		});
 
-        $.ajax({
-            url: "/board/search",
-            type: "POST",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify(formData),
-            success: function (data) {
-                console.log("검색조건 저장 확인 ", JSON.stringify(savedFormData));
+		}
 
-                console.log(data);
-                var memberList = data.memberList;
-                var totalCount = data.totalCount;
+		function loadData(formData) {
+    
+			console.log("여기 loadData===================================");
+    		console.log("=============================="+formData.pageNum+"===========================");
 
-                if (memberList.length === 0) {
-                    let bodyHtml = '<tr class="tBody">';
-                    bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
-                    bodyHtml += '</tr>';
-                    $("#appendBody").empty().append(bodyHtml);
-                } else {
-                    let bodyHtml = "";
-                    $.each(memberList, function (index, item) {
-                        bodyHtml += '<tr class="tBody">';
-                        bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
-                        bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
-                        bodyHtml += '<td class="unm">' + item.unm + "</td>";
-                        bodyHtml += '<td class="birth">' + item.birth + "</td>";
-                        bodyHtml += '<td class="sex">' + item.sex + "</td>";
-                        bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
-                        bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
-                        bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
-                        bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
-                        bodyHtml += '<td class="project"><a href="#" class="button small">보기 (' + item.uno + ')</a></td>/tr>';
-                    });
+    
+    		$.ajax({
+		        
+    			url: "/board/search",
+		        type: "POST",
+		        contentType: "application/json",
+		        dataType: "json",
+		        data: JSON.stringify(formData),
+		        success: function (data) {
+            
 
-                    $("#appendBody").empty().append(bodyHtml);
-                }
+		            console.log(data);
+		            var memberList = data.memberList;
+		            var totalCount = data.totalCount;
 
-                endPage = data.endPage;
-                startPage = data.startPage;
-                prev = data.prev;
-                next = data.next;
-                pageNum = data.pageNum;
-                realEnd = data.realEnd;
+            		if (memberList.length === 0) {
+                
+            			let bodyHtml = '<tr class="tBody">';
+		                bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
+		                bodyHtml += '</tr>';
+		                $("#appendBody").empty().append(bodyHtml);
+            
+            		} else {
+                
+            			let bodyHtml = "";
+                		$.each(memberList, function (index, item) {
+                    
+                			bodyHtml += '<tr class="tBody">';
+		                    bodyHtml += '<td class="ckNum"><input name="code" type="checkbox" ' + item.uno + '></td>';
+		                    bodyHtml += '<td class="uno"><a href="/board/modify?uno=' + item.uno + '">' + item.uno + "</a></td>";
+		                    bodyHtml += '<td class="unm">' + item.unm + "</td>";
+		                    bodyHtml += '<td class="birth">' + item.birth + "</td>";
+		                    bodyHtml += '<td class="sex">' + item.sex + "</td>";
+		                    bodyHtml += '<td class="jobRank">' + item.jobRank + "</td>";
+		                    bodyHtml += '<td class="jobSkill">' + item.jobSkill + "</td>";
+		                    bodyHtml += '<td class="inoffiSts">' + item.inoffiSts + "</td>";
+		                    bodyHtml += '<td class="entrDate">' + item.entrDate + "</td>";
+		                    bodyHtml += '<td class="project">';
+		                    bodyHtml += '<form action="/board/userProjcet" method="post" style="display: inline;">';
+		                    bodyHtml += '<input type="hidden" name="uno" value="' + item.uno + '">';
+		                    bodyHtml += '<button type="submit" class="button small">보기</button>';
+		                    bodyHtml += '</form>';
+		                    bodyHtml += '</td></tr>';
+                		});
 
-                console.log("endPage ======================== : ===================" + endPage);
-                console.log("pageNum ====================== : ================" + pageNum);
+                		$("#appendBody").empty().append(bodyHtml);
+            
+            		}
 
-                createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd);
-            },
-            error: function (xhr, status, error) {
-                console.error(error);
-            }
-        });
-    }
+			            endPage = data.endPage;
+			            startPage = data.startPage;
+			            prev = data.prev;
+			            next = data.next;
+			            pageNum = data.pageNum;
+			            realEnd = data.realEnd;
 
-    function createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd) {
-        var paginationHtml = '<div>'; // 페이징 UI를 감싸는 div 태그 열기
+			            console.log("endPage ======================== : ===================" + endPage);
+			            console.log("pageNum ====================== : ================" + pageNum);
 
-        if (prev) {
-            paginationHtml += '<a href="#" onclick="goPage(' + (startPage - 1) + ')">이전</a>';
-        }
+            			createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd);
+        
+		        },
+        
+		        error: function (xhr, status, error) {
+            
+		        	console.error(error);
+        
+		        }
+    
+    		});
 
-        for (var i = startPage; i <= endPage; i++) {
-            if (i === pageNum) {
-                paginationHtml += '<code>' + i + '</code>';
-            } else {
-                paginationHtml += '<a class="changePage" href="#" onclick="goPage(' + i + ')"><code>' + i + '</code></a>';
-            }
-        }
-
-        if (endPage < realEnd) {
-            paginationHtml += '<a href="#" onclick="goPage(' + (endPage + 1) + ')">다음</a>';
-        }
-
-        paginationHtml += '</div>'; // 페이징 UI를 감싸는 div 태그 닫기
-
-        $("#pagination").empty().append(paginationHtml);
-    }
-
+		}
 		
-/* 	function goRegister(){
-		
-		if (savedFormData) {
-			console.log("검색조건 저장 확인 " , savedFormData);
-	        // register 페이지로 이동 값을 가지고 이동
-	        window.location.href = '/board/register?' + $.param(savedFormData);
-	    } else {
-	    	// 그냥이동
-	    	window.location.href = '/board/register'
-	    }
-		 
-	}*/
 
-	$("input[type='reset']").click(function() {
-	    // 검색 결과 영역 초기화
-	    $("#appendBody").empty();
-	    
-	    // 페이징 초기화
-	    $("#pagination").empty();
+	function createPaginationUI(pageNum, startPage, endPage, prev, next, realEnd) {
+    	
+		var paginationHtml = '<div>'; // 페이징 UI를 감싸는 div 태그 열기
 
-	    // 검색 조건 초기화
-	    $("#unmInput").val("");
+    	if (prev) {
+        
+    		paginationHtml += '<a href="#" onclick="goPage(' + (startPage - 1) + ')">이전</a>';
+    	
+    	}
+
+    	for (var i = startPage; i <= endPage; i++) {
+        
+    		if (i === pageNum) {
+            
+    			paginationHtml += '<code>' + i + '</code>';
+        
+    		} else {
+            
+    			paginationHtml += '<a class="changePage" href="#" onclick="goPage(' + i + ')"><code>' + i + '</code></a>';
+        
+    		}
+    
+    	}
+
+    	if (endPage < realEnd) {
+        
+    		paginationHtml += '<a href="#" onclick="goPage(' + (endPage + 1) + ')">다음</a>';
+    
+    	}
+
+    	paginationHtml += '</div>'; // 페이징 UI를 감싸는 div 태그 닫기
+
+    	$("#pagination").empty().append(paginationHtml);
+
+	}
+
+	
+
+	function clearSession() {
+    
+		sessionStorage.clear();
+
+	}
+
+
+	//"취소" 버튼 클릭 시
+	$("#cancelButton").click(function () {
+    
+		// 세션 스토리지 초기화
+    	clearSession();
+
+    	// 초기 검색 조건으로 검색 수행
+    	search2();
+
+    	// 검색 결과 영역 초기화
+    	$("#appendBody").empty();
+
+    	// 페이징 초기화
+    	$("#pagination").empty();
+
+    	// 검색 조건 초기화
+    	$("#unmInput").val("");
 	    $("#jobSkillInput").val("");
 	    $("#inoffiStsInput").val("");
 	    $("#dateInput1").val("");
 	    $("#dateInput2").val("");
-	    
-	 // "검색 결과가 없습니다." 메시지 표시
+
+	    // "검색 결과가 없습니다." 메시지 표시
 	    let bodyHtml = '<tr class="tBody">';
 	    bodyHtml += '<td colspan="10" class="noData">검색 결과가 없습니다.</td>';
 	    bodyHtml += '</tr>';
+    
 	    $("#appendBody").empty().append(bodyHtml);
-	    
 
 	});
 	
-	// 뒤로가기및 취소 감지
-	window.addEventListener('popstate', function (event) {
-	    // 여기서 검색 폼의 값을 이용하여 board/list 페이지 호출
-	    
-	    loadData(savedFormData);
-	});
 	
-	
+
 </script>
 	
 <script>

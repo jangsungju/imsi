@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
-import com.example.ex05.domain.vo.Criteria;
 import com.example.ex05.domain.vo.MemberDTO;
 import com.example.ex05.domain.vo.MemberVO;
 

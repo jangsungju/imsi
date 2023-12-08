@@ -41,7 +41,7 @@ div h3 {
 			<label><a href="/board/list"><h3>사원관리</h3></a></label>
 		</div>
 		<div>
-			<label><a href="/project/list"><h3>프로젝트 관리</h3></a></label>
+			<label><a href="/project/list"><h3>프로젝트관리</h3></a></label>
 		</div>
 	</nav>
 </body>

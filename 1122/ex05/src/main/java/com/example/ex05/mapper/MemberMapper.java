@@ -1,11 +1,13 @@
 package com.example.ex05.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import com.example.ex05.domain.vo.Criteria;
 import com.example.ex05.domain.vo.MemberDTO;
+import com.example.ex05.domain.vo.MemberProjectDTO;
 
 //@Mapper
 //public interface MemberMapper {
@@ -19,5 +21,12 @@ public interface MemberMapper {
 
 	public int getTotalCount(MemberDTO dateForm);
 	
-
+    public List<MemberProjectDTO> readUserProject(long uno);
+    
+    public boolean updateUserProject(MemberProjectDTO memberProjectDTO);
+    
+    boolean deleteUserProject(@Param("uno") Long uno, @Param("pjtNo") int pjtNo);
+    
+    public List<MemberProjectDTO> notAddUserProject(MemberProjectDTO searchNotAddUserProjects);
+    
 }

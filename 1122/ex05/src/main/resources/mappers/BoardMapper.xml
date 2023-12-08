@@ -53,8 +53,8 @@
 		UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK, JOBSKILL, DEVPT, INOFFI_STS, 
 		MBLNO, EMAILADDR, DELETE_COL FROM MEMBER WHERE UNO = #{UNO} </select> -->
 	
-	<select id="read" resultType="boardVO">
-		SELECT 
+<!-- <select id="read" resultType="boardVO">
+	SELECT 
 		M.UNO as UNO
 		, M.UNM AS UNM
 		, M.PWD AS PWD
@@ -77,21 +77,76 @@
 		JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
 		JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
     WHERE UNO =	#{UNO}
-	</select>
+	</select> -->
+	
+	
+<select id="read" resultType="boardVO">
+		SELECT 
+		M.UNO as UNO
+		, M.UNM AS UNM
+		, M.PWD AS PWD
+		, TO_CHAR(M.birth, 'YYYY-MM-DD') AS BIRTH
+		, M.PHOTO AS PHOTO
+		, M.SEX
+		, TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE
+		, M.JOBRANK
+		, M.JOBSKILL
+		, M.DEVPT
+		, M.INOFFI_STS
+		, M.MBLNO AS MBLNO
+		, M.EMAILADDR AS EMAILADDR
+		, M.DELETE_COL AS DELETE_COL
+	FROM EX00.MEMBER M
+		JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
+		JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
+		JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
+		JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
+		JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
+		JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
+    WHERE UNO =	#{UNO}
+</select>
+	
 
 	<delete id="delete">
 		DELETE FROM MEMBER WHERE UNO = #{UNO}
 	</delete>
 	
-		<update id="update">
+	<update id="update">
 		UPDATE MEMBER
-		SET UNM = #{unm}, 
-		PWD = CASE WHEN #{pwd} IS NOT NULL AND #{pwd} != '' THEN #{pwd} ELSE PWD END, 
-		BIRTH = #{birth}, PHOTO = #{photo} , SEX = #{sex} , ENTRDATE = #{entrDate}, JOBRANK = #{jobRank} ,
-		JOBSKILL = #{jobSkill} , DEVPT = #{devPt} , INOFFI_STS = #{inoffiSts} , MBLNO
-		= #{mblNo} , EMAILADDR = #{emailAddr} , DELETE_COL = #{deleteCol}
+			SET UNM = #{unm}
+			,PWD = CASE WHEN #{pwd} IS NOT NULL AND #{pwd} != '' THEN #{pwd} ELSE PWD END
+			,BIRTH = #{birth}
+			,PHOTO = #{photo}
+			,SEX =  <if test="sex != null">#{sex}</if>
+        			<if test="sex == null">SEX</if>
+			,ENTRDATE = #{entrDate}
+			,JOBRANK = #{jobRank}
+			,JOBSKILL = #{jobSkill}
+			,DEVPT = #{devPt}
+			,INOFFI_STS = #{inoffiSts}
+			,MBLNO = #{mblNo}
+			,EMAILADDR = #{emailAddr}
+			,DELETE_COL = #{deleteCol}
 		WHERE UNO = #{uno}
 	</update>
+	
+<!-- 	<update id="update">
+		UPDATE MEMBER
+			SET UNM = #{unm}
+			,PWD = COALESCE(NULLIF(#{pwd}, ''), PWD)  NULL 또는 빈 문자열이 아닌 경우에만 업데이트
+			,BIRTH = #{birth}
+			,PHOTO = #{photo}
+			,SEX = #{sex}
+			,ENTRDATE = #{entrDate}
+			,JOBRANK = #{jobRank}
+			,JOBSKILL = #{jobSkill}
+			,DEVPT = #{devPt}
+			,INOFFI_STS = #{inoffiSts}
+			,MBLNO = #{mblNo}
+			,EMAILADDR = #{emailAddr}
+			,DELETE_COL = #{deleteCol}
+		WHERE UNO = #{uno}
+	</update> -->
 
 <!-- 	<update id="update">
 		UPDATE MEMBER

@@ -110,12 +110,12 @@
 <!-- getTotalCount 메서드를 위한 SQL 쿼리 -->
 <select id="getTotalCount" parameterType="memberDTO" resultType="int">
 	SELECT COUNT(*) FROM EX00.MEMBER M
-    JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
-    JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
-    JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
-    JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
-    JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
-    JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
+	    JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
+	    JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
+	    JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
+	    JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
+	    JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
+	    JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
     <where>
        <if test="unm != null and unm != ''">
 			AND UNM LIKE '%' || #{unm} || '%'
@@ -141,6 +141,77 @@
     </where>
 </select>
 
+<!-- userProject  -->
+<select id="readUserProject" parameterType="long" resultType="memberProjectDTO">
+	SELECT
+	    M.UNO,
+	    M.UNM,
+	    DC1.DTL_CDNM AS JOBRANK,
+	    MP.PJTNO,
+	    COALESCE(P.PJTNM, '') AS PJTNM,
+	    COALESCE(DC3.DTL_CDNM, '') AS COMPANYNM,
+	    COALESCE(TO_CHAR(MP.PJT_FROMDATE, 'YYYY-MM-DD'), '') AS PJT_FROMDATE,
+	    COALESCE(TO_CHAR(MP.PJT_TODATE, 'YYYY-MM-DD'), '') AS PJT_TODATE,
+	    COALESCE(DC2.DTL_CD, '') AS PJTROLE
+	FROM MEMBER M
+		LEFT JOIN
+		    MEMBER_PROJECT MP ON M.UNO = MP.UNO
+		LEFT JOIN
+		    PROJECT P ON MP.PJTNO = P.PJTNO
+		LEFT JOIN
+		    DTL_CODE DC1 ON (M.JOBRANK = DC1.DTL_CD AND DC1.CODE = 'D200')
+		LEFT JOIN
+		    DTL_CODE DC3 ON (P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600')
+		 LEFT JOIN
+        	DTL_CODE DC2 ON (MP.PJTROLE = DC2.DTL_CD AND DC2.CODE = 'D700')
+	WHERE M.UNO = #{UNO}
+	ORDER BY MP.PJT_FROMDATE DESC
+</select>
+
+<update id="updateUserProject" parameterType="map">
+
+ 	UPDATE MEMBER_PROJECT
+    	SET
+        	PJT_FROMDATE = TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD'),
+        	PJT_TODATE = TO_DATE(#{pjtToDate}, 'YYYY-MM-DD'),
+        	PJTROLE = #{pjtRole}
+    	WHERE
+        	UNO = #{uno}
+        	AND PJTNO = #{pjtNo}
+        	
+</update>
 
 
+<delete id="deleteUserProject" parameterType="map">
+	
+	DELETE FROM MEMBER_PROJECT
+    	WHERE UNO = #{uno}
+    	AND PJTNO = #{pjtNo}
+    	
+</delete>
+
+<select id="notAddUserProject" parameterType="memberProjectDTO"  resultType="memberProjectDTO">
+
+    SELECT
+    P.PJTNO,
+    P.PJTNM,
+    COALESCE(DC3.DTL_CDNM, '') AS COMPANYNM,
+    TO_CHAR(P.PJTFROMDATE, 'YYYY-MM-DD') AS PJT_FROMDATE,
+    TO_CHAR(P.PJTTODATE, 'YYYY-MM-DD') AS PJT_TODATE
+    FROM PROJECT P
+    LEFT JOIN DTL_CODE DC3 ON (P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600')
+    <where> NOT EXISTS (
+        SELECT 1
+        FROM MEMBER_PROJECT MP
+        WHERE MP.PJTNO = P.PJTNO
+        AND MP.UNO = #{uno}
+    ) 
+    <if test="pjtNm != null and pjtNm != ''">
+        AND P.PJTNM LIKE CONCAT('%', #{pjtNm}, '%')
+    </if>
+    <if test="compyNo != null and compyNo != ''">
+        AND P.COMPYNO = #{compyNo}
+    </if>
+    </where>
+</select>
 </mapper>

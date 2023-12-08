@@ -42,5 +42,6 @@ public class MemberDTO {
 	private int endPage;
 	private int realEnd;
 	private boolean prev, next; 
+	
 }   
     

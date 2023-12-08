@@ -22,13 +22,17 @@ input[readonly] {
     cursor: not-allowed; /* 커서 모양 변경 */
 }
 
-/* 수정창에서 읽기 전용 상태에서 포커스 시 스타일 지정 */
-input[readonly]:focus {
-    outline: none; /* 포커스 효과 제거 */
+select[disabled]{
+ 
+ 	background-color: #f2f2f2; /* 읽기 전용 배경색 지정 */
+    border: 3px solid #b3e0f2; /* 테두리 스타일 지정 */
+    color: #666; /* 글자색 지정 */
     cursor: not-allowed; /* 커서 모양 변경 */
-    background-color: #f2f2f2; /* 포커스 시 배경색 유지 */
-    border: 1px solid #ccc; /* 포커스 시 테두리 스타일 유지 */
-    color: #666; /* 포커스 시 글자색 유지 */
+	
+}
+
+select[disabled]:active {
+    border-color: #ff0000;
 }
 
 </style>
@@ -66,7 +70,13 @@ input[readonly]:focus {
 									<td>생년월일</td>
 									<td><input type="date" name="birth" value="${member.birth}" readonly></td>
 									<td>성별</td>
-									<td><input type="text" name="sex" value="${member.sex}" readonly></td>
+									<td>
+										<select name="sex" disabled style="">
+											<option value=""></option>
+											<option value="01" ${member.sex == '01' ? 'selected' : ''}>남자</option>
+											<option value="02" ${member.sex == '02' ? 'selected' : ''}>여자</option>
+									    </select>
+									</td>
 								</tr>
 								<tr>
 									<td>비밀번호</td>
@@ -129,7 +139,7 @@ input[readonly]:focus {
 											<option value="04"
 											${member.jobSkill == '04' ? 'selected' : ''}>초급</option>
 									</select></td>
-									<td>개발 분야</td>
+									<td colspan="2">개발 분야</td>
 									<td><select name="devPt">
 											<option value=""></option>
 											<option value="01"

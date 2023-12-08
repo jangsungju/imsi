@@ -147,7 +147,7 @@ input:invalid {
 										<div style="text-align: right;">
 											<input type="button" value="등록" onclick="submitCheck();">
 											&nbsp;&nbsp;&nbsp;&nbsp; 
-											<input type="button" value="취소" onclick="location.href='/board/list'">
+											<input type="button" value="취소" onclick="goBack()">
 										</div>
 									</td>
 								</tr>
@@ -293,7 +293,13 @@ function submitCheck() {
 </script>
 
 <script>
-	//URL에서 매개변수 읽어오기
+
+	function goBack() {
+    
+		history.go(-1);
+
+	}
+/* 	//URL에서 매개변수 읽어오기
 	function getUrlParameter(name) {
     
 		name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -322,7 +328,7 @@ function submitCheck() {
 
     	// 이 값을 사용하여 필요한 작업 수행
 
-	}
+	} */
 
 	/* // URL 매개변수를 사용하여 이동하는 함수
 	function goToPreviousPage() {
