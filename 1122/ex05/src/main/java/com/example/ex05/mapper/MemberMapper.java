@@ -6,8 +6,8 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.example.ex05.domain.vo.MemberDTO;
-import com.example.ex05.domain.vo.MemberProjectDTO;
+import com.example.ex05.domain.member.vo.MemberDTO;
+import com.example.ex05.domain.member.vo.MemberProjectDTO;
 
 //@Mapper
 //public interface MemberMapper {
@@ -28,5 +28,9 @@ public interface MemberMapper {
     boolean deleteUserProject(@Param("uno") Long uno, @Param("pjtNo") int pjtNo);
     
     public List<MemberProjectDTO> notAddUserProject(MemberProjectDTO searchNotAddUserProjects);
+    
+    public int getPjtTotalCount(MemberProjectDTO searchNotAddUserProjects );
+    
+    public boolean addUserProjects(MemberProjectDTO project);
     
 }

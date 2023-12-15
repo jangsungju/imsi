@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.example.ex05.domain.vo.MemberDTO;
-import com.example.ex05.domain.vo.MemberProjectDTO;
+import com.example.ex05.domain.member.vo.MemberDTO;
+import com.example.ex05.domain.member.vo.MemberProjectDTO;
 
 
 @Repository

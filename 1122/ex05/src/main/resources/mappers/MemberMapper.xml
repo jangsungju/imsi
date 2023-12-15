@@ -14,7 +14,6 @@
         TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE,
         JOBRANK,
         JOBSKILL,
-        DEVPT,
         INOFFI_STS
     FROM (
         SELECT
@@ -22,17 +21,15 @@
             M.UNO AS UNO,
             M.UNM AS UNM,
             M.BIRTH AS BIRTH,
-            M.SEX AS SEX,
+            SE.DTL_CDNM AS SEX,
             M.ENTRDATE AS ENTRDATE,
-            M.JOBRANK AS JOBRANK,
-            M.JOBSKILL AS JOBSKILL,
-            M.DEVPT AS DEVPT,
-            M.INOFFI_STS AS INOFFI_STS
+            JR.DTL_CDNM AS JOBRANK,
+            JS.DTL_CDNM AS JOBSKILL,
+            IO.DTL_CDNM AS INOFFI_STS
         FROM ex00.member M
             JOIN dtl_code SE ON M.SEX = SE.DTL_CD AND SE.CODE = 'D100'
             JOIN dtl_code JR ON M.JOBRANK = JR.DTL_CD AND JR.CODE = 'D200'
             JOIN dtl_code JS ON M.JOBSKILL = JS.DTL_CD AND JS.CODE = 'D300'
-            JOIN dtl_code DP ON M.DEVPT = DP.DTL_CD AND DP.CODE = 'D400'
             JOIN dtl_code IO ON M.INOFFI_STS = IO.DTL_CD AND IO.CODE = 'D500'
         <where>
             <if test="unm != null and unm != ''">
@@ -41,9 +38,15 @@
             <if test="inoffiSts != null and inoffiSts != ''">
                 AND M.INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
             </if>
-            <if test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
-                AND M.ENTRDATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
-            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+   			 	AND ENTRDATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			</if>
+			<if test="startDate != null and startDate != ''">
+				AND ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+			</if>
             <if test="jobSkill != null and jobSkill != ''">
                 AND M.JOBSKILL LIKE '%' || #{jobSkill} || '%'
             </if>
@@ -123,14 +126,14 @@
 		<if test="inoffiSts != null and inoffiSts != ''">
 			AND INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
 		</if>
-		<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
-   			 AND ENTRDATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+   			 AND ENTRDATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') and TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
-		<if test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
-			AND ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		<if test="startDate != null and startDate != ''">
+				AND ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
 		</if>
-		<if test="(startDate == null or startDate == '') and (endDate != null and endDate != '')">
-			AND ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		<if test="endDate != null and endDate != ''">
+				AND ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
 		</if>
 		<if test="jobSkill != null and jobSkill != ''">
 			AND JOBSKILL LIKE '%' || #{jobSkill} || '%'
@@ -146,12 +149,13 @@
 	SELECT
 	    M.UNO,
 	    M.UNM,
+	    TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE,
 	    DC1.DTL_CDNM AS JOBRANK,
 	    MP.PJTNO,
 	    COALESCE(P.PJTNM, '') AS PJTNM,
 	    COALESCE(DC3.DTL_CDNM, '') AS COMPANYNM,
-	    COALESCE(TO_CHAR(MP.PJT_FROMDATE, 'YYYY-MM-DD'), '') AS PJT_FROMDATE,
-	    COALESCE(TO_CHAR(MP.PJT_TODATE, 'YYYY-MM-DD'), '') AS PJT_TODATE,
+	    COALESCE(TO_CHAR(MP.INP_DATE, 'YYYY-MM-DD'), '') AS INP_DATE,
+	    COALESCE(TO_CHAR(MP.WDP_DATE, 'YYYY-MM-DD'), '') AS WDP_DATE,
 	    COALESCE(DC2.DTL_CD, '') AS PJTROLE
 	FROM MEMBER M
 		LEFT JOIN
@@ -165,15 +169,15 @@
 		 LEFT JOIN
         	DTL_CODE DC2 ON (MP.PJTROLE = DC2.DTL_CD AND DC2.CODE = 'D700')
 	WHERE M.UNO = #{UNO}
-	ORDER BY MP.PJT_FROMDATE DESC
+	ORDER BY MP.INP_DATE DESC
 </select>
 
 <update id="updateUserProject" parameterType="map">
 
  	UPDATE MEMBER_PROJECT
     	SET
-        	PJT_FROMDATE = TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD'),
-        	PJT_TODATE = TO_DATE(#{pjtToDate}, 'YYYY-MM-DD'),
+        	INP_DATE = TO_DATE(#{inpDate}, 'YYYY-MM-DD'),
+        	WDP_DATE = TO_DATE(#{wdpDate}, 'YYYY-MM-DD'),
         	PJTROLE = #{pjtRole}
     	WHERE
         	UNO = #{uno}
@@ -190,28 +194,75 @@
     	
 </delete>
 
-<select id="notAddUserProject" parameterType="memberProjectDTO"  resultType="memberProjectDTO">
-
-    SELECT
-    P.PJTNO,
-    P.PJTNM,
-    COALESCE(DC3.DTL_CDNM, '') AS COMPANYNM,
-    TO_CHAR(P.PJTFROMDATE, 'YYYY-MM-DD') AS PJT_FROMDATE,
-    TO_CHAR(P.PJTTODATE, 'YYYY-MM-DD') AS PJT_TODATE
-    FROM PROJECT P
-    LEFT JOIN DTL_CODE DC3 ON (P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600')
-    <where> NOT EXISTS (
-        SELECT 1
-        FROM MEMBER_PROJECT MP
-        WHERE MP.PJTNO = P.PJTNO
-        AND MP.UNO = #{uno}
-    ) 
-    <if test="pjtNm != null and pjtNm != ''">
-        AND P.PJTNM LIKE CONCAT('%', #{pjtNm}, '%')
-    </if>
-    <if test="compyNo != null and compyNo != ''">
+<select id="notAddUserProject" parameterType="map"  resultType="memberProjectDTO">
+	 
+	SELECT 
+		RN
+		, PJTNO
+		, PJTNM
+		, COALESCE(COMPANYNM, '') AS COMPANYNM
+		, TO_CHAR(PJTFROMDATE, 'YYYY-MM-DD') AS PJTFROMDATE
+		, TO_CHAR(PJTTODATE, 'YYYY-MM-DD') AS PJTTODATE 
+	FROM 
+  		( 
+    		SELECT 
+    			P.PJTNO
+    			, P.PJTNM
+    			, COALESCE(DC3.DTL_CDNM, '') AS COMPANYNM
+    			, P.PJTFROMDATE
+    			, P.PJTTODATE
+    			, ROW_NUMBER() OVER (ORDER BY P.PJTFROMDATE DESC) AS RN 
+    FROM PROJECT P 
+    LEFT JOIN DTL_CODE DC3 ON (P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600') 
+    <where>
+      NOT EXISTS ( 
+        
+        SELECT 1 FROM MEMBER_PROJECT 
+        MP WHERE MP.PJTNO = P.PJTNO AND MP.UNO = #{uno} 
+      
+      )
+      AND P.pjtFromDate > #{entrDate}
+      <if test="pjtNm != null and pjtNm != ''">
+        AND P.PJTNM LIKE '%' || #{pjtNm} || '%'
+      </if>
+      <if test="compyNo != null and compyNo != ''">
         AND P.COMPYNO = #{compyNo}
-    </if>
+      </if>
+    </where>
+  ) TEMP 
+  WHERE RN BETWEEN ((#{pageNum} - 1) * #{amount}) + 1 AND #{pageNum} * #{amount}
+  ORDER BY PJTFROMDATE DESC
+ 
+</select>
+
+<select id="getPjtTotalCount" parameterType="memberProjectDTO" resultType="int">
+	SELECT COUNT(*) FROM EX00.PROJECT P
+	LEFT JOIN DTL_CODE DC3 ON (P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600')
+    <where>  
+        <if test="uno !=null">
+    	AND NOT EXISTS (
+	        SELECT 1
+	        FROM MEMBER_PROJECT MP
+	        WHERE MP.PJTNO = P.PJTNO
+	        AND MP.UNO = #{uno}
+    	)
+    	AND P.pjtFromDate > #{entrDate}
+	    </if>
+	    <if test="pjtNm != null and pjtNm != ''">
+	        AND P.PJTNM LIKE '%' || #{pjtNm} || '%'
+	    </if>
+	    <if test="compyNo != null and compyNo != ''">
+	        AND P.COMPYNO = #{compyNo}
+	    </if>
     </where>
 </select>
+ 
+<insert id="addUserProjects" parameterType="memberProjectDTO">
+
+	INSERT INTO member_project (uNO, pjtNo, INP_DATE, WDP_DATE, pjtRole)
+    VALUES (#{uno}, #{pjtNo}, TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD'), TO_DATE(#{pjtToDate}, 'YYYY-MM-DD'), '')
+
+</insert>
+
+
 </mapper>

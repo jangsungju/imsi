@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.example.ex05.domain.vo.MemberVO;
+import com.example.ex05.domain.member.vo.MemberVO;
+import com.example.ex05.member.service.BoardService;
 
 import lombok.extern.log4j.Log4j;
 

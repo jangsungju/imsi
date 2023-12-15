@@ -76,7 +76,7 @@ input:invalid {
 								<tr>
 									<td>생 년 월 일</td>
 									<td><input type="date" name="birth" min="1940-01-01"
-										id="birthDateInput"></td>
+										id="dateInput1"></td>
 									<td>성별<span class="redFont">*</span></td>
 									<td>남자<input type="radio" name="sex" value="01" required>
 										&nbsp;&nbsp;&nbsp; 여자<input type="radio" name="sex" value="02">
@@ -85,7 +85,7 @@ input:invalid {
 								<tr>
 									<td>입 사 일<span class="redFont">*</span></td>
 									<td><input type="date" name="entrDate" min="1960-01-01"
-										id="entrDateInput" required></td>
+										id="dateInput2" required></td>
 									<td>재직 상태<span class="redFont">*</span></td>
 									<td><select name="inoffiSts" required>
 											<option value=""></option>
@@ -257,39 +257,6 @@ function submitCheck() {
     return true;
 }
 
-	function limitDateInput(inputId) {
-		var input = document.getElementById(inputId);
-		var selectedDate = new Date(input.value);
-		var currentDate = new Date();
-
-		// 입력된 날짜가 유효한지 확인합니다.
-		if (isNaN(selectedDate)) {
-    		
-			alert('올바르지 않은 날짜 형식입니다.');
-    		input.value = ''; // 입력 값을 지웁니다.
-    	return;
-
-		}
-
-	// 현재 날짜 이후인지 확인합니다.
-		if (selectedDate > currentDate) {
-    		
-			alert('현재 날짜 이후의 날짜는 조회할 수 없습니다.');
-    		input.value = ''; // 입력 값을 지웁니다.
-
-		}
-
-	}
-	
-	document.getElementById('birthDateInput').addEventListener('input', function () {
-	    limitDateInput('birthDateInput');
-	});
-
-	document.getElementById('entrDateInput').addEventListener('input', function () {
-	    limitDateInput('entrDateInput');
-	});
-
-
 </script>
 
 <script>
@@ -299,51 +266,52 @@ function submitCheck() {
 		history.go(-1);
 
 	}
-/* 	//URL에서 매개변수 읽어오기
-	function getUrlParameter(name) {
-    
-		name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    	var results = regex.exec(location.search);
-    
-    	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 
-	}
-
-	// 페이지 로드 시 실행
-	window.onload = function () {
-    	
-		// amount, pageNum, inoffiSts 값을 읽어와서 사용
-    	var amount = getUrlParameter('amount');
-    	var pageNum = getUrlParameter('pageNum');
-    	var inoffiSts = getUrlParameter('inoffiSts');
-    	var unm = getUrlParameter('unm');
-    	var startDate = getUrlParameter('startDate');
-    	var endDate = getUrlParameter('endDate');
-
-    	// 이후에 필요한 로직 수행
-    	console.log('Amount:', amount);
-    	console.log('PageNum:', pageNum);
-    	console.log('InoffiSts:', inoffiSts);
-
-    	// 이 값을 사용하여 필요한 작업 수행
-
-	} */
-
-	/* // URL 매개변수를 사용하여 이동하는 함수
-	function goToPreviousPage() {
-    
-	// amount, pageNum, inoffiSts 등 필요한 매개변수를 가져와서 URL 생성
-    	var amount = getUrlParameter('amount');
-    	var pageNum = getUrlParameter('pageNum');
-    	var inoffiSts = getUrlParameter('inoffiSts');
-
-    	// 적절한 URL로 이동
-    	var url = '/board/list?amount=' + amount + '&pageNum=' + pageNum + '&inoffiSts=' + inoffiSts;
-    
-    	//console.log("================== url : ", url);
-    	window.location.href = url;
-
-	} */
 </script>
+<script>
+function validateDateRange() {
+    var birthDate = new Date(document.getElementById('dateInput1').value);
+    var entrDate = new Date(document.getElementById('dateInput2').value);
+
+    // 종료일이 시작일보다 빠른 경우
+    if (endDate < startDate) {
+        alert('종료일은 시작일보다 이후여야 합니다. 다시 입력해주세요.');
+        document.getElementById('dateInput2').value = ''; // 종료일 입력 값을 지웁니다.
+    }
+}
+
+function limitDateInput(inputId) {
+	var input = document.getElementById(inputId);
+    var selectedDate = new Date(input.value);
+    var currentDate = new Date();
+    var minDate = new Date(input.min);
+   
+    
+    // 입력된 날짜가 유효한지 확인합니다.
+    if (isNaN(selectedDate)) {
+        alert('올바르지 않은 날짜 형식입니다.');
+        input.value = ''; // 입력 값을 지웁니다.
+        return;
+    }
+
+    // 최소값(min)을 확인합니다.
+    if (selectedDate < minDate) {
+        alert('입력 가능한 최소 날짜는 ' + input.min + '입니다.');
+        input.value = ''; // 입력 값을 지웁니다.
+        return;
+    }
+    // 현재 날짜 이후인지 확인합니다.
+    if (selectedDate > currentDate) {
+        alert('현재 날짜 이후의 날짜는 조회할 수 없습니다.');
+        input.value = ''; // 입력 값을 지웁니다.
+        return;
+    }
+
+    // 유효성 검사를 한 후에 validateDateRange 함수를 호출합니다.
+    validateDateRange();
+}
+
+</script>
+
+
 </html>

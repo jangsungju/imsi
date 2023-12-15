@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ex05.mapper.ProjectMapper">
+
+<!-- <sql id="projectColumns">
+    SELECT
+        P.PJTNO,
+        P.PJTNM,
+        DC3.DTL_CDNM AS COMPANYNM,
+        TO_CHAR(P.PJTFROMDATE,'YYYY-MM-DD') AS PJTFROMDATE,
+        TO_CHAR(P.PJTTODATE,'YYYY-MM-DD') AS PJTTODATE
+</sql>
+
+<select id="search" parameterType="map" resultType="projectDTO">
+
+    <include refid="projectColumns" />
+    FROM EX00.PROJECT P
+    JOIN DTL_CODE DC3 ON P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600'
+    <where>
+        <if test="pjtNm != null and pjtNm != ''">
+            AND P.PJTNM LIKE '%' || #{pjtNm} || '%'
+        </if>
+        <if test="compyNo != null and compyNo != ''">
+            AND P.COMPYNO LIKE LIKE '%' || #{compyNo} || '%'
+        </if>
+        <if test="(pjtFromDate != null and pjtFromDate != '') and (pjtToDate != null and pjtToDate != '')">
+            AND P.PJTFROMDATE BETWEEN TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD') and TO_DATE(#{pjtToDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="pjtFromDate != null and pjtFromDate != ''">
+            AND P.PJTFROMDATE &gt; = #{pjtFromDate}
+        </if>
+        <if test="pjtToDate != null and pjtToDate != ''">
+            AND P.PJTTODATE &lt; = #{pjtToDate}
+        </if>
+    </where>
+ 
+</select>
+ -->
+
+<select id="search" parameterType="map" resultType="projectDTO">
+
+	SELECT 
+			RN
+			, PJTNO
+			, PJTNM
+			, COMPANYNM
+			, TO_CHAR(PJTFROMDATE,'YYYY-MM-DD') AS PJTFROMDATE
+            , TO_CHAR(PJTTODATE, 'YYYY-MM-DD') AS PJTTODATE
+	FROM(
+     
+		SELECT
+	        ROW_NUMBER() OVER (ORDER BY PJTNO DESC) AS RN
+	        , P.PJTNO AS PJTNO
+	        , P.PJTNM AS PJTNM
+	        , DC3.DTL_CDNM AS COMPANYNM
+	        , P.PJTFROMDATE AS PJTFROMDATE
+	        , P.PJTTODATE AS PJTTODATE
+    	FROM EX00.PROJECT P
+    	JOIN DTL_CODE DC3 ON P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600'
+	    <where>
+	        <if test="pjtNm != null and pjtNm != ''">
+	            AND P.PJTNM LIKE '%' || #{pjtNm} || '%'
+	        </if>
+	        <if test="compyNo != null and compyNo != ''">
+	            AND P.COMPYNO LIKE '%' || #{compyNo} || '%'
+	        </if>
+	        <if test="(pjtFromDate != null and pjtFromDate != '') and (pjtToDate != null and pjtToDate != '')">
+	            AND P.PJTFROMDATE BETWEEN TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD') and TO_DATE(#{pjtToDate}, 'YYYY-MM-DD')
+	        </if>
+	        <if test="pjtFromDate != null and pjtFromDate != ''">
+	            AND P.PJTFROMDATE &gt; = #{pjtFromDate}
+	        </if>
+	        <if test="pjtToDate != null and pjtToDate != ''">
+	            AND P.PJTTODATE &lt; = #{pjtToDate}
+	        </if>
+	        <if test="(pjtNm == null or pjtNm == '') and (compyNo == null or compyNo == '') and (pjtFromDate == null or pjtFromDate == '') and (pjtToDate == null or pjtToDate == '')">
+    			AND 1 = 0
+   		    </if>
+	    </where>
+	
+	) M
+	WHERE RN BETWEEN ((#{pageNum} - 1) * #{amount}) + 1 AND #{pageNum} * #{amount}
+ 
+</select>
+
+<select id="totalCount" parameterType="map" resultType="int">
+
+		SELECT COUNT(*) 
+		FROM EX00.PROJECT P
+		JOIN DTL_CODE DC3 ON P.COMPYNO = DC3.DTL_CD AND DC3.CODE = 'D600'
+	    	<where>
+		        <if test="pjtNm != null and pjtNm != ''">
+		            AND P.PJTNM LIKE '%' || #{pjtNm} || '%'
+		        </if>
+		        <if test="compyNo != null and compyNo != ''">
+		            AND P.COMPYNO LIKE '%' || #{compyNo} || '%'
+		        </if>
+		        <if test="(pjtFromDate != null and pjtFromDate != '') and (pjtToDate != null and pjtToDate != '')">
+		            AND P.PJTFROMDATE BETWEEN TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD') and TO_DATE(#{pjtToDate}, 'YYYY-MM-DD')
+		        </if>
+		        <if test="pjtFromDate != null and pjtFromDate != ''">
+		            AND P.PJTFROMDATE &gt; = #{pjtFromDate}
+		        </if>
+		        <if test="pjtToDate != null and pjtToDate != ''">
+		            AND P.PJTTODATE &lt; = #{pjtToDate}
+		        </if>
+		       <if test="(pjtNm == null or pjtNm == '') and (compyNo == null or compyNo == '') and (pjtFromDate == null or pjtFromDate == '') and (pjtToDate == null or pjtToDate == '')">
+    				AND 1 = 0
+   		    	</if>
+	    	</where>
+
+</select>
+
+<select id="readProject" resultType="projectVO">
+
+	SELECT 
+			PJTNO
+			, PJTNM
+			, TO_CHAR(PJTFROMDATE, 'YYYY-MM-DD') AS PJTFROMDATE
+			, TO_CHAR(PJTTODATE, 'YYYY-MM-DD') AS PJTTODATE
+			, COMPYNO
+	FROM EX00.PROJECT
+	WHERE PJTNO = #{pjtNo}
+
+</select>
+
+<update id="modifyProjcet">
+
+  UPDATE EX00.PROJECT
+  	SET 
+  		PJTNM = #{pjtNm}
+  		, PJTFROMDATE = TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD')
+  		, PJTTODATE = TO_DATE(#{pjtToDate}, 'YYYY-MM-DD')
+  		, COMPYNO =#{compyNo}
+  	WHERE
+		PJTNO = #{pjtNo}
+
+</update>
+
+<insert id="registerProject">
+
+	INSERT INTO PROJECT (
+		PJTNO
+		, PJTNM
+		, PJTFROMDATE
+		, PJTTODATE
+		, COMPYNO
+		)
+	VALUES (
+		project_seq.nextval
+		, #{pjtNm}
+		, #{pjtFromDate}
+		, #{pjtToDate}
+		, #{compyNo}
+		)
+		
+</insert>
+
+<!-- <select id="projectMembers" resultType="projectDTO">
+
+	SELECT 
+		P.PJTNM
+		, DC6.DTL_CDNM AS COMPANYNM
+		, TO_CHAR(P.PJTFROMDATE,'YYYY-MM-DD') AS PJTFROMDATE 
+		, TO_CHAR(P.PJTTODATE,'YYYY-MM-DD') AS PJTTODATE
+		, M.UNO
+		, M.UNM
+		, DC7.DTL_CDNM AS PJTROLE
+		, TO_CHAR(MP.INP_DATE,'YYYY-MM-DD') AS INPDATE
+		, TO_CHAR(MP.WDP_DATE,'YYYY-MM-DD') AS WDPDATE
+        FROM PROJECT P
+        LEFT JOIN MEMBER_PROJECT MP ON MP.PJTNO = P.PJTNO
+        LEFT JOIN MEMBER M ON MP.UNO = M.UNO
+        LEFT JOIN DTL_CODE DC6 ON P.COMPYNO = DC6.DTL_CD AND DC6.CODE ='D600'
+        LEFT JOIN DTL_CODE DC7 ON MP.PJTROLE = DC7.DTL_CD AND  DC7.CODE ='D700'
+        WHERE P.PJTNO = #{pjtNo}
+        
+    </select> -->
+
+<select id="projectMembers" resultType="projectDTO">
+
+	SELECT 
+		P.PJTNM
+		, P.pjtNo
+		, DC6.DTL_CDNM AS COMPANYNM
+		, TO_CHAR(P.PJTFROMDATE,'YYYY-MM-DD') AS PJTFROMDATE 
+		, TO_CHAR(P.PJTTODATE,'YYYY-MM-DD') AS PJTTODATE
+		, M.UNO
+		, M.UNM
+		, MP.PJTROLE
+		, TO_CHAR(MP.INP_DATE,'YYYY-MM-DD') AS INPDATE
+		, TO_CHAR(MP.WDP_DATE,'YYYY-MM-DD') AS WDPDATE
+        FROM PROJECT P
+        LEFT JOIN MEMBER_PROJECT MP ON MP.PJTNO = P.PJTNO
+        LEFT JOIN MEMBER M ON MP.UNO = M.UNO
+        LEFT JOIN DTL_CODE DC6 ON P.COMPYNO = DC6.DTL_CD AND DC6.CODE ='D600'
+        LEFT JOIN DTL_CODE DC7 ON MP.PJTROLE = DC7.DTL_CD AND  DC7.CODE ='D700'
+        WHERE P.PJTNO = #{pjtNo}
+        
+    </select>
+
+</mapper>

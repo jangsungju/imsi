@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,11 +21,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.ex05.domain.vo.MemberDTO;
-import com.example.ex05.domain.vo.MemberProjectDTO;
-import com.example.ex05.domain.vo.MemberVO;
-import com.example.ex05.service.BoardService;
-import com.example.ex05.service.MemberService;
+import com.example.ex05.domain.member.vo.MemberDTO;
+import com.example.ex05.domain.member.vo.MemberProjectDTO;
+import com.example.ex05.domain.member.vo.MemberSearchConditionDTO;
+import com.example.ex05.domain.member.vo.MemberVO;
+import com.example.ex05.member.service.BoardService;
+import com.example.ex05.member.service.MemberService;
 
 import lombok.extern.log4j.Log4j;
 
@@ -61,6 +61,9 @@ public class BoardController {
 
 	@Autowired
 	private MemberDTO memberDTO;
+	
+	@Autowired
+	private MemberProjectDTO memberProjectDTO;
 	
 	@GetMapping("/main")
 	public void main() {
@@ -106,7 +109,7 @@ public class BoardController {
 
 	@PostMapping("/search")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> search(@RequestBody MemberDTO dataForm, Model model){
+	public ResponseEntity<Map<String, Object>> search(@RequestBody MemberDTO dataForm){
 		
 		
 		Map<String, Object> map = new HashMap<>();
@@ -240,7 +243,7 @@ public class BoardController {
 		
 		}
 				
-		return "redirct:/board/list";
+		return "redirect:/board/list";
 	}
 	
 	
@@ -266,19 +269,23 @@ public class BoardController {
 	}
 	
 	@GetMapping("/register")
-	public void register(MemberDTO memberDTO) {
+	public void register() {
 		
 	}
 
-	@PostMapping("/userProjcet")
-	public void userProject(@RequestParam Long uno,Model model) {
+	@PostMapping("/userProject")
+	public void userProject(@RequestParam Long uno,@ModelAttribute MemberSearchConditionDTO formData, Model model) {
 		
 		log.info("=========================userProject================");
 		
-		log.info("uno" + uno);
+		
+		log.info("=================== uno :==============" + uno);
 		
 		model.addAttribute("userProject", memberService.readUserProject(uno));
+		model.addAttribute("formData", formData);
 		
+		log.info("====================formData============="+formData);
+		log.info(memberService.readUserProject(uno));
 		
 		}
 	
@@ -333,13 +340,16 @@ public class BoardController {
 	
 	
 	@PostMapping("/addUserProject")
-	public void addUserProjcet(@RequestParam Long uno, Model model) {
+	public void addUserProjcet(@RequestParam Long uno,@RequestParam String entrDate ,Model model) {
 		
 		log.info("=========================addUserProject================");
 		
 		log.info("===================uno==============:"+uno);
+		
+		log.info("======================entrDate=====================" + entrDate);
 	
 		model.addAttribute("uno", uno);
+		model.addAttribute("entrDate",entrDate);
 		
 	}
 
@@ -352,16 +362,97 @@ public class BoardController {
 	    Map<String, Object> map = new HashMap<>();
 		
 	    List<MemberProjectDTO> ProjectLists = memberService.notAddUserProject(searchNotAddUserProjects);
+
+	    MemberProjectDTO memberProjectDTO = new MemberProjectDTO();
+	    log.info("projectLists ==========" + ProjectLists);
+
+	    memberProjectDTO.setAmount(searchNotAddUserProjects.getAmount());
+	    memberProjectDTO.setPageNum(searchNotAddUserProjects.getPageNum());
+	    memberProjectDTO.setUno(searchNotAddUserProjects.getUno());
+        log.info("================================pageNum==============="+memberProjectDTO.getPageNum());	    
 	    
+	    int pjtTotalCount = memberService.getPjtTotalCount(searchNotAddUserProjects);// 전체 데이터 개수 조회
+	    memberProjectDTO.setPjtTotalCount(pjtTotalCount);
+	    
+	    int pageSize = searchNotAddUserProjects.getAmount();
+		int pagingSize = 10;
+		
+		// 1/10.0 =  0.1 math =  1 *10 = 10  , 14/10.0 = 1.4 =  math 2 *10 = 20 
+	    int endPage = ((int) Math.ceil(memberProjectDTO.getAmount() / (double)pagingSize)) * pagingSize;
+	    // 10 - (10-1) = 1 1페이지 시작
+	    int startPage = endPage - (pagingSize - 1);
+	    // 136 /10 = 13... 음 안되 14페이지까지 나와야함  136.0 /10 13.6 = 14
+	    int realEnd = (int) Math.ceil(pjtTotalCount / (double) pageSize);//최대 페이지 갯수 토탈페이지
+	    
+	    boolean prev = startPage > 1;
+	    
+	    boolean next = endPage < realEnd;
+	    	    
+	    //1~10 1단위 이전과 다음 버튼은 10페이지씩 넘어가게 한다
+		//11~20
+		//20~30
+		//...이전단위가 있을경우 1은 없음
+	    if (realEnd < endPage) {
+	    	//다음 단위가 있을경우 
+	        endPage = realEnd;
+	    
+	    }
+	    
+
+	    
+        memberProjectDTO.setPageNum(searchNotAddUserProjects.getPageNum());
+        
+        int pageNum = memberProjectDTO.getPageNum();
+        long uno = memberProjectDTO.getUno();
+		log.info("=====================이거는 이제 한번 갔다왔을때 pageNum :===================================" + memberProjectDTO.getPageNum());
+	    
+	    memberProjectDTO.setStartPage(startPage);
+	    memberProjectDTO.setEndPage(endPage);
+	    memberProjectDTO.setRealEnd(realEnd);
+	    memberProjectDTO.setPrev(prev);
+	    memberProjectDTO.setNext(next);
+	    
+	    
+	    log.info("pjtTotalCount ==========="+pjtTotalCount);
 	    
 	    map.put("projectLists", ProjectLists);
-		
-		
-		
+		map.put("pjtTotalCount", pjtTotalCount);
+		map.put("endPage", endPage);
+		map.put("startPage", startPage);
+		map.put("realEnd", realEnd);
+		map.put("prev", prev);
+		map.put("next", next);
+	    map.put("pageNum", pageNum);
+	    map.put("realEnd", realEnd);
+		map.put("uno", uno);
 		
 		
 		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
 	
+	
+	@PostMapping("/addUserProjects")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> addUserProjects(@RequestBody List<MemberProjectDTO> projects){
+		log.info("========================addUserProjects============================");
+	    log.info("추가할 조건들 확인하기 : " + projects);
+	    Map<String, Object> map = new HashMap<>();
+		
+	    
+	    for (MemberProjectDTO project : projects) {
+	    	
+	    	boolean isSuccess = memberService.addUserProjects(project);
+		    
+	    	if (isSuccess) {
+	    	    map.put("insertResult", "프로젝트가 성공적으로 등록되었습니다.");
+	    	} else {
+	    	    map.put("insertResult", "프로젝트 등록에 실패했습니다.");
+	    	}
+	    }
+	    
+	    
+	    
+		return new ResponseEntity<>(map, HttpStatus.OK);
+	}
 	
 }

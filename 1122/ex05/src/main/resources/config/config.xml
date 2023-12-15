@@ -20,9 +20,11 @@ mapUnderscoreToCamelCase 설정은 MyBatis에서 많이 사용되는 설정 중 
  </settings>
  
 	<typeAliases>
-		<typeAlias type="com.example.ex05.domain.vo.MemberVO" alias="boardVO"/>
-		<typeAlias type="com.example.ex05.domain.vo.MemberDTO" alias="memberDTO"/>
-		<typeAlias type="com.example.ex05.domain.vo.MemberProjectDTO" alias="memberProjectDTO"/>
+		<typeAlias type="com.example.ex05.domain.member.vo.MemberVO" alias="boardVO"/>
+		<typeAlias type="com.example.ex05.domain.member.vo.MemberDTO" alias="memberDTO"/>
+		<typeAlias type="com.example.ex05.domain.member.vo.MemberProjectDTO" alias="memberProjectDTO"/>
+		<typeAlias type="com.example.ex05.domain.project.vo.ProjectDTO" alias="projectDTO"/>
+		<typeAlias type="com.example.ex05.domain.project.vo.ProjectVO" alias="projectVO"/>
 	</typeAliases>
   
 </configuration>
