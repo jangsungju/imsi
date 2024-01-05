@@ -27,4 +27,7 @@ public interface MemberService {
 	public int getPjtTotalCount(MemberProjectDTO searchNotAddUserProjects);
 
     public boolean addUserProjects(MemberProjectDTO project);
+    
+    public int checkId(String memberDto);
+    
 }

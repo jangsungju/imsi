@@ -33,12 +33,25 @@
 		#{emailAddr}, #{delete_col}) </insert> -->
 
 	<insert id="insert" parameterType="boardVO">
-		INSERT INTO MEMBER(UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK,
+	<!--  <selectKey keyProperty="uno" resultType="int" order="BEFORE">
+        SELECT SEQ_UNO.NEXTVAL FROM DUAL
+    </selectKey>
+	 -->	
+	 	INSERT INTO MEMBER(UNO,U_ID ,UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK,
 		JOBSKILL, DEVPT, INOFFI_STS, MBLNO, EMAILADDR, DELETE_COL)
-		VALUES(#{uno}, #{unm}, #{pwd},#{birth} ,#{photo}, #{sex}, #{entrDate},
+		VALUES(seq_uno.nextval,#{uId} ,#{unm}, #{pwd},#{birth} ,#{photo}, #{sex}, #{entrDate},
 		#{jobRank}, #{jobSkill},#{devPt}, #{inoffiSts}, #{mblNo},
 		#{emailAddr}, #{deleteCol})
+		
 	</insert>
+	
+	<insert id="authorityRegister">
+	
+		INSET INTO MEMBER_AUTHORITY (UNO,AUTHONO)
+		VALUES((select uno from ex00.member m where m.u_id = #{uId}),'02')
+	
+	</insert>
+	
 	
 	<!-- 	<insert id="insert" parameterType="boardVO">
 		INSERT INTO MEMBER(UNO, UNM, PWD, BIRTH, PHOTO, SEX, ENTRDATE, JOBRANK,

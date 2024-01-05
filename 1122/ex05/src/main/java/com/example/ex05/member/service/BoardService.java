@@ -25,6 +25,6 @@ public interface BoardService {
 	//전체 게시글 가져오기
     public List<MemberVO> getList();
     
-    
+    public void authorityRegister(String uId);
     
 }

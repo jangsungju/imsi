@@ -1,0 +1,117 @@
+<nav class="form-container">
+						<form name="searchForm" method="post">
+							<div style="display:inline-block;">
+							<div class="form-row">
+								<label>이름 :<input type="text" name="unm" id="nameInput">
+								            <input type="hidden" value="N">
+								</label>
+							</div>
+							<div class="form-row">
+								<label class="form-label"> 기술등급 <select name="jobSkill"
+									class="form-input" id="jobSkillInput" value="R">
+										<option value=""></option>
+										<option value="01">특급</option>
+										<option value="02">고급</option>
+										<option value="03">중급</option>
+										<option value="04">초급</option>
+								</select>
+								</label>
+							</div>
+							<div class="form-row">
+								<label class="form-label">재직상태 <select name="inoffiSts"
+									class="form-input" id="inoffiStsInput" value="I">
+										<option value=""></option>
+										<option value="01">재직</option>
+										<option value="02">휴직</option>
+										<option value="03">퇴직</option>
+								</select>
+								</label>
+							</div>
+							</div>
+							<div class="form-ent" style="text-align:left;">
+								<label class="form-label"> 입사일<input type="date"
+									name="startDate" min="1990-01-01" class="dateInput" id="dateInput1" value="S"> ~ <input
+									type="date" name="endDate" min="1990-01-01" class="dateInput" id="dateInput2" value="F">
+								</label>
+								</div>
+								<div class="form-submit">
+									<input type="submit" id="search" value="조회" >
+								</div>
+						</form>
+					</nav>
+
+
+아래 스크립트 문이고
+<script>
+
+document.getElementByClassName('dateInput').max = new Date().toISOString().split('T')[0];
+
+$(document).ready(function() {
+	  // 폼 제출 이벤트 처리
+	  $("#search").on("click", function(e) {
+	    e.preventDefault();
+
+	    // 검색 조건 가져오기
+	    var name = $("#nameInput").val();
+	    var jobSkill = $("#jobSkillInput").val();
+	    var inoffiSts = $("#inoffiStsInput").val();
+	    var startDate = $("#dateInput1").val();
+	    var endDate = $("#dateInput2").val();
+
+	    // AJAX 요청 보내기
+	    $.ajax({
+	      url: "/board/search",
+	      type: "POST",
+	      data: {
+	        unm: name,
+	        jobSkill: jobSkill,
+	        inoffiSts: inoffiSts,
+	        startDate: startDate,
+	        endDate: endDate
+	      },
+	      success: function(response) {
+	        // 검색 결과를 받아와서 리스트 화면 업데이트
+	        updateList(response);
+	      },
+	      error: function(xhr, status, error) {
+	        console.error(error);
+	      }
+	    });
+	  });
+
+	  // 리스트 화면 업데이트 함수
+	  function updateList(data) {
+	    // 받아온 데이터를 가지고 리스트 화면을 업데이트하는 로직을 구현하세요
+	    // 예시로는 콘솔에 결과를 출력하는 예제를 보여드리겠습니다
+	    console.log(data);
+	  }
+	});
+</script>
+
+@Controller
+@Log4j
+@RequestMapping("/board/*")
+public class BoardController {
+
+	@PostMapping("/search")
+	public String search(Model model, String unm, String jobSkill, String inoffiSts, String startDate, String endDate){
+		
+		log.info("/search...........................");
+		log.info("unm :" + unm);
+		log.info("jobSkill :" + jobSkill);
+		log.info("inoffiSts :" + inoffiSts);
+		log.info("startDate :" + startDate);
+		log.info("endDate :" + endDate);
+		
+		
+		 List<MemberVO> memberList = null;
+		
+		 if (unm == "" && jobSkill == "" && inoffiSts == "" && startDate == "" && endDate == "") {
+		        memberList = boardService.getList();
+		    } 
+		    log.info("list : " + memberList);
+		    model.addAttribute("memberList", memberList);
+		return "list";
+	}
+	
+}

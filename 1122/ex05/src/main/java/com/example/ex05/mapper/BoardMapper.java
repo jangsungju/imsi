@@ -22,5 +22,6 @@ public interface BoardMapper {
 	
 	public int update(MemberVO member);
 	
+	public void authorityRegister(String uId);
 	
 }

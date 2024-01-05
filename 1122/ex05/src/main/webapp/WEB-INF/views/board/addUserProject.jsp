@@ -249,6 +249,13 @@ table {
 	    // 기존의 내용을 지웁니다.
 	    tbody.empty();
 
+	    
+	    // 검색 결과가 없을 때
+	    if (result.projectLists == null || result.projectLists.length === 0) {
+	        tbody.html('<tr class="tBody"><td colspan="10" class="noData">검색 결과가 없습니다.</td></tr>');
+	        return; // 검색 결과가 없으면 함수 종료
+	    }
+	    
 	    // 검색 결과를 순회하며 각각의 프로젝트를 테이블에 추가합니다.
 	    for (var i = 0; i < result.projectLists.length; i++) {
 	        var project = result.projectLists[i];

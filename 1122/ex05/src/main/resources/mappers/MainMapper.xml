@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ex05.mapper.MainMapper">
+
+<select id="login" resultType="memberDTO">
+ SELECT PWD,UNO,UNM
+ FROM ex00.MEMBER
+ WHERE U_ID=#{userId}
+</select>
+
+<select id="getAuthoNo" resultType="string">
+
+	SELECT AUTHONO
+	FROM EX00.MEMBER_AUTHORITY
+	WHERE UNO =#{uno}
+
+</select>
+
+<select id="getMenu" resultType="menuDTO">
+
+	SELECT m.menu_id, m.menu_name, m.menu_url
+	FROM menu m
+	JOIN autho_menu am ON m.menu_id = am.menu_id
+	WHERE am.authono = #{authoNo}
+
+</select>
+
+</mapper>

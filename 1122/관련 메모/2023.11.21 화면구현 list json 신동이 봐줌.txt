@@ -1,0 +1,113 @@
+updateList <- 이 function은 왜있음?
+제이슨으로 조회된거 위에 테이블 만들어서 뿌려줄라고
+
+= ,=?;
+
+
+1. 버튼을 클릭한다.
+2. server 호출해서 데이터를 조회한다.
+
+	=> 데이터를 갖고올때 jquery를 사용하면 
+	var formData = $("form[name=searchForm]").serialize() ;
+	위 처럼 .serialize()를 통해서 form 태그 안에 존재하는 name들의 값을 갖고오게 되어있음
+
+	만약 .serialize();를 사용하지 않을거라면 직접 만드는것도 가능해
+
+	뭐였지.. put이였나 -, -;
+
+
+지금 색칠되어있는 부분처럼은 절때 하지마
+
+나중에 serialize 이거 많이쓰니까 사용법안 알아둬
+저거 자체를 object화 시켜서 json으로 바꿔서 서버로 전달하묜댐
+
+
+줄맞춤은 진짜 무~~~~~~~~~~~~~~~~~~~조껀 해야함
+기본적으로 배를 가르거나 줄이바뀌면 4칸을 띄우거나 탭을 한것을 기준으로 한다.
+나중에 lombok이라고해서 getter, setter 안만들어주고 별칭 만들어주는 라이브러리 있음
+그거 찾아서 넣는것도 해보셈
+
+요즘은 controller -> service -> serviceImpl -> mapper -> mapperImpl
+이따위짓거리 잘 안함
+
+이거 우선 수정
+
+
+
+controller -> service -> mapper -> query(xml) 형식으로 많이씀
+사실상 impl <- 쓰는 이유는 service나 mapper(dto 등)을 interpace화 시켜서 여러군대서 사용하려고
+나누는 작업을 하는건데 이건 많이 쓰진 않음
+근데 사용하게 된다하면
+Board에서 시작된건 Board로 존속시켜야함
+
+	1. boardController로 전달받았어
+	2. 근데 memberService에 있는걸 호출할꺼야
+	3. memberService에 내가 조회해야 할 method를 만들어 (search)
+	4. MemberDtoImpl에 보면 memberDto를 implements 해놨으면
+	     MemeberDTO Class에 search() method가 존재해야해(상속받아야 하니까)
+
+
+
+
+근데 DTO는 필드 개념인데......??
+
+DTO는 로직을 가지지 않는 데이터 객체이고, getter, setter 메소드만 가진 클래스를 의미한다.
+dto는 결국엔 너가 화면에서 전달받은 데이터를 모아두거나, 따로 변경해서 사용하려는 필드의 개념인거임
+
+#MVC패턴2
+여기서 3번쨰(mapper, repository, dao) 등에 사용하려면 이름을 dao, mapper, repository로 가져가야함
+ex) MemberMapper, MemberDao, MemberRepository 등
+
+
+
+엥? 이러면 DTO가 없어지고 service에서 mapper로 가야함
+
+
+com.example.ex05.mapper.MemberMapper
+
+
+xml구문에 mapper에 namespace가 결국 해당 패키지 경로에 있는 method명이 같은걸 바라보겠다라는거거든
+com.example.ex05.mapper.MemberMapper <- MemberMapper에 있는  id(method명) = search를 바라보겠다.
+<select id="search" resultType="memberDTO"></select>
+
+resultType <- resultType은 내가 조회해온 결과를 어디다 넣을건지고
+모야 이거 별칭은 어디서 줬음?
+
+DB툴 열어보셈
+
+노트북 존내 구대기누
+
+쿼리는 무조껀 저렇게 밑으로 쭉 빼야함
+
+나중에 개발할때 누군가는 유지보수를 해야하기 땜시롱
+
+
+지금 보면 화면에서는 name으로 파라미터를 넘겼지만
+실제 서버(dto,즉 필드)에는 name이라는 필드가 없기 떄문에 못받은거야
+
+이해되고는있어?
+
+결국 화면에서 json으로 만들때 필드이름 = 서버에서 받는 필드의 이름이랑 동일해야함
+
+mybatis를 활용해서 화면에서 query까지 파라미터를 전달해서 실제 query가 파라미터를 받은거야
+내가 테스트1이라는걸 name의 이름으로 보냈으니까.
+
+모야이건? 왜 태그가 만들어져있어??
+
+
+RESPONSEENTITY
+https://a1010100z.tistory.com/106
+REST
+jQuery / Method / .clone() - 선택한 요소를 복제하는 메서드
+
+
+
+
+
+
+3. 데이터 조회 후 화면에 뿌려준다.
+
+
+
+소스트리
+깃 형상관리 툴

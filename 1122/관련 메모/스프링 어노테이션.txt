@@ -1,0 +1,76 @@
+alt shift a 그리드모드
+alt shift r 이름변경
+
+사용하려면 root-context.xml에 등록해주어야한다.
+context:componenet-scan com.example.ex01.dependency 경로
+
+@component
+//스프링이 객체를 관리하도록 하는 어노테이션
+
+@data
+//롬북이 객체를 생성 해준다
+
+@autowired
+//필드 주입? 연결해준다
+//필드주입이 굉장히 편하게 할수 있지만 순환참조? (무한루프)시 오류가 발생하지 않아 stackOverFlow발생
+
+프레임워크1
+8강에서 롬북사용시 왜 오류가 나는지 설명
+
+setter주입은 잘 사용하지 않는다
+상황을 만들기도 어렵고 난해함
+
+기존의 것을 바꿔줄때 주입해줄수 있다.
+대체할 것들이 많이 있다 굳이
+
+@생성자 주입
+메모리에 할당하면서  초기화 값이  주입되므로 final사용이 가능하다.
+필드를 올리자 마자 초기화 되니까
+다른곳에서 변형이 불가능함 final 때문에
+의존성 주입이 되지 않으면 객체생성이 되지 않는다.
+
+@AllArgsConstructor
+모든 필드를 초기화 할수 있는 생성자
+
+@RequiredArgsConstructor
+필요한 생성자만 초기화 할수있는 생성자 생성 
+@NonNull or final이 붙어있는 것들만 사용가능
+
+@Qualifier() 식별자
+jp??를 사용할때도 쓰인다.
+@AutoWired를 통해서 객체를 주입할 때  같은 타입의 객체가 여러개 있으면 구분할 때 사용된다.
+
+@Qualifer("식별자A")
+@Primary[기본 식별자로 설정 defalut값]
+public class 클래스명A implements 인터페이스{
+
+}
+
+@Qualifer("식별자B")
+public class 클래스명B implements 인터페이스{
+
+}
+@AutoWired
+private 인터페이스 객체;
+
+
+7강 8강 듣고 문제 풀어보자!!
+
+ 예제
+dependency패키지에
+1.restaurant 클래스 선언
+2.chef클래스 선언
+3.의존관계를 확랍하고 생성자 주입 진행
+4.단위테스트를 통해 객체 확인
+
+qulifier package
+1.restaurant 인터페이스 선언
+2.steak 가격 80000원 sidebar 유무 선언
+3.outback클래스 선언후 restaurant 지정
+4.vips클래스 선언후 restaurant 지정
+5.기본 주입대상은 vips로 설정
+6.단위 테스를 통해 객체 확인        
+
+
+
+

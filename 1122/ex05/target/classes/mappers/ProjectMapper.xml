@@ -197,6 +197,112 @@
         LEFT JOIN DTL_CODE DC7 ON MP.PJTROLE = DC7.DTL_CD AND  DC7.CODE ='D700'
         WHERE P.PJTNO = #{pjtNo}
         
-    </select>
+</select>
+    
+<update id="updateProjectMembers" parameterType="map">
+    
+	UPDATE ex00.MEMBER_PROJECT
+	SET
+		INP_DATE = TO_DATE(#{inpDate},'YYYY-MM-DD'),
+		WDP_DATE = TO_DATE(#{wdpDate},'YYYY-MM-DD'),
+		PJTROLE = #{pjtRole}
+	WHERE
+		UNO= #{uno}
+		AND PJTNO = #{pjtNo}
+    
+</update>
+    
+<delete id="deleteProjectMembers" parameterType="map">
+   
+    DELETE FROM ex00.MEMBER_PROJECT
+    WHERE 
+    	UNO = #{uno}
+		AND PJTNO = #{pjtNo}
+    
+</delete>
+  
+<select id="notAPM" parameterType="map" resultType="ProjectDTO">
+<!-- SELECT 
+				M.UNO
+				, M.UNM
+				, M.JOBRANK
+				, M.JOBSKILL
+				, M.ENTRDATE 이렇게 선택해주는 부분이 없으면 테이블에 없는 정의되지 않았다고 나옴
+				, ROW_NUMBER() OVER(ORDER BY M.ENTRDATE DESC) AS RN 이 부분을 사용하려면
+			FROM ex00.MEMBER M 
+			
+			
+			 -->
+	SELECT
+		RN
+		, UNO
+		, UNM
+		, JOBRANK
+		, JOBSKILL
+	FROM 
+		(
+			SELECT 
+				M.UNO
+				, M.UNM
+				, DC2.DTL_CDNM AS JOBRANK
+				, DC3.DTL_CDNM AS JOBSKILL
+				, M.ENTRDATE 
+				, ROW_NUMBER() OVER(ORDER BY M.ENTRDATE DESC) AS RN
+			FROM ex00.MEMBER M
+			LEFT JOIN DTL_CODE DC2 ON M.JOBRANK = DC2.DTL_CD AND DC2.CODE ='D200'
+			LEFT JOIN DTL_CODE DC3 ON M.JOBSKILL = DC3.DTL_CD AND DC3.CODE ='D300'
+			<where>
+    			NOT EXISTS(
+        
+        			SELECT 1 FROM MEMBER_PROJECT MP 
+        			WHERE MP.UNO = M.UNO AND MP.PJTNO = #{pjtNo}
+    			)
+    AND #{pjtToDate} > M.ENTRDATE
+    <if test="unm != '' and unm != 'NULL'">
+        AND M.UNM LIKE '%' || #{unm} || '%'
+    </if>
+</where>
+		)TEMP
+	WHERE RN BETWEEN ((#{pageNum} - 1) * #{amount}) + 1 AND #{pageNum} * #{amount}
+  ORDER BY ENTRDATE DESC
+	
+</select>
+
+<select id="notAPMCount" parameterType="map" resultType="int">
+	
+	SELECT COUNT(*)
+	FROM 
+		(
+			SELECT 
+				M.UNO
+				, M.UNM
+				, DC2.DTL_CDNM AS JOBRANK
+				, DC3.DTL_CDNM AS JOBSKILL
+				, M.ENTRDATE 
+				, ROW_NUMBER() OVER(ORDER BY M.ENTRDATE DESC) AS RN
+			FROM ex00.MEMBER M
+			LEFT JOIN DTL_CODE DC2 ON M.JOBRANK = DC2.DTL_CD AND DC2.CODE ='D200'
+			LEFT JOIN DTL_CODE DC3 ON M.JOBSKILL = DC3.DTL_CD AND DC3.CODE ='D300'
+			<where>
+    			NOT EXISTS(
+        
+        			SELECT 1 FROM MEMBER_PROJECT MP 
+        			WHERE MP.UNO = M.UNO AND MP.PJTNO = #{pjtNo}
+    			)
+    			AND #{pjtToDate} > M.ENTRDATE
+    		<if test="unm != '' and unm != 'NULL'">
+        	AND M.UNM LIKE '%' || #{unm} || '%'
+    		</if>
+			</where>
+		)
+</select>
+
+<insert id="addProjectMembers">
+
+	INSERT INTO ex00.MEMBER_PROJECT (UNO, PJTNO)
+	VALUES (#{uno}, #{pjtNo})
+
+</insert>
+
 
 </mapper>

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,8 @@ import com.example.ex05.domain.member.vo.MemberSearchConditionDTO;
 import com.example.ex05.domain.member.vo.MemberVO;
 import com.example.ex05.member.service.BoardService;
 import com.example.ex05.member.service.MemberService;
+import com.example.ex05.menu.vo.MenuDTO;
+import com.example.ex05.sha.UserSha256;
 
 import lombok.extern.log4j.Log4j;
 
@@ -65,9 +68,28 @@ public class BoardController {
 	@Autowired
 	private MemberProjectDTO memberProjectDTO;
 	
-	@GetMapping("/main")
-	public void main() {
+	@RequestMapping("/main")
+	public void main(HttpSession session, Model model) {
 		log.info("/main................");
+		
+		 // 세션에서 사용자 정보 가져오기
+	    long uno = (long)session.getAttribute("uno");
+	    String authoNo = (String) session.getAttribute("authoNo");
+	    String unm = (String) session.getAttribute("unm");
+	    
+	    // 세션에서 메뉴 항목 리스트 가져오기
+	    List<MenuDTO> menuItems = (List<MenuDTO>) session.getAttribute("menuItems");
+	    
+	    
+	    // 필요한 경우, 사용자 정보를 기반으로 추가 처리 수행
+//	    if (uno != null) {
+//	        // 예: 사용자 권한에 따라 특정 데이터를 모델에 추가
+//	        // 예: 사용자의 상세 정보를 데이터베이스에서 조회
+//	    } else {
+//	        // 사용자가 로그인하지 않았을 경우의 처리
+//	        // 예: 로그인 페이지로 리디렉션
+//	    }
+		
 	}
 
 	
@@ -190,7 +212,13 @@ public class BoardController {
 	public String register(MemberVO memberVO, RedirectAttributes rttr) {
 		
 		log.info("/register : " + memberVO);
+		String pwd = memberVO.getPwd();
+		
+		String encryptedPassword = UserSha256.encrypt(pwd);
+		log.info("==sha256=== :"+encryptedPassword);
+		memberVO.setPwd(encryptedPassword);
 		boardService.register(memberVO);
+		boardService.authorityRegister(memberVO.getUId());
 		
 		rttr.addFlashAttribute("uno", memberVO.getUno());
 		rttr.addFlashAttribute("amount", memberDTO.getAmount());
@@ -200,6 +228,7 @@ public class BoardController {
 		rttr.addFlashAttribute("unm", memberDTO.getUnm());
 		rttr.addFlashAttribute("startDate", memberDTO.getStartDate());
 		rttr.addFlashAttribute("endDate", memberDTO.getEndDate());
+		rttr.addFlashAttribute("msg","등록이 완료 되었습니다.");
 		
 
 //		flash라는 영역은 session에 생기고, redirect로 전송 할 때 request영역이 초기화된다.
@@ -211,6 +240,23 @@ public class BoardController {
 	
 	}
 	
+	@PostMapping("/idCheck")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> idCheck(@RequestBody String userId){
+		
+		log.info("==========idCheck==================");
+		log.info("uId :"+userId);
+		Map<String,Object> map = new HashMap<>();
+	
+		int isSuccess = memberService.checkId(userId);
+		
+		log.info("결과 :" +isSuccess);
+		
+		map.put("idCheckResult", isSuccess);
+		
+		return new ResponseEntity<>(map,HttpStatus.OK);
+	}
+	
 //	@GetMapping("/read")
 //    public void read(Long uNo,Model model) {
 //		log.info("/read : "+ uNo);
@@ -220,7 +266,7 @@ public class BoardController {
 //		
 //	}
 	
-	@GetMapping({"/read","/modify"})
+	@GetMapping("/modify")
     public void read(Long uno,HttpServletRequest request,Model model) {
 		
 		log.info("read~~~~modify~~~~~");
@@ -454,5 +500,9 @@ public class BoardController {
 	    
 		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
+	
+	
+
+	
 	
 }

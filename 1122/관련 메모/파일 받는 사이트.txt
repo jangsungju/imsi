@@ -1,0 +1,5 @@
+https://mvnrepository.com/search?q=lombok
+
+메이븐 레포지터리 
+jar이나 필요한거 찾아서 받기
+

@@ -9,7 +9,7 @@
         RN,
         UNO,
         UNM,
-        TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH,
+        NVL(TO_CHAR(BIRTH, 'YYYY-MM-DD'), '0000-00-00') AS BIRTH,
         SEX,
         TO_CHAR(ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE,
         JOBRANK,
@@ -217,8 +217,8 @@
     <where>
       NOT EXISTS ( 
         
-        SELECT 1 FROM MEMBER_PROJECT 
-        MP WHERE MP.PJTNO = P.PJTNO AND MP.UNO = #{uno} 
+        SELECT 1 FROM MEMBER_PROJECT MP 
+    	WHERE MP.PJTNO = P.PJTNO AND MP.UNO = #{uno} 
       
       )
       AND P.pjtFromDate > #{entrDate}
@@ -263,6 +263,14 @@
     VALUES (#{uno}, #{pjtNo}, TO_DATE(#{pjtFromDate}, 'YYYY-MM-DD'), TO_DATE(#{pjtToDate}, 'YYYY-MM-DD'), '')
 
 </insert>
+
+<select id="checkId" resultType="int">
+	
+	SELECT COUNT(*)
+	FROM ex00.MEMBER
+	where U_ID = #{uId}
+
+</select>
 
 
 </mapper>

@@ -8,12 +8,16 @@ import org.springframework.stereotype.Service;
 import com.example.ex05.domain.dao.BoardDAO;
 import com.example.ex05.domain.member.vo.MemberDTO;
 import com.example.ex05.domain.member.vo.MemberVO;
+import com.example.ex05.mapper.BoardMapper;
 
 @Service
 public class BoardServiceImpl implements BoardService {
 
 	@Autowired
 	 private BoardDAO boardDAO;
+	
+	@Autowired
+	private BoardMapper boardMapper;
 	
 	@Override
 	public void register(MemberVO memberVO) {
@@ -44,6 +48,13 @@ public class BoardServiceImpl implements BoardService {
 	public List<MemberVO> getList() {
 
 		return boardDAO.getList();
+	}
+
+	@Override
+	public void authorityRegister(String uId) {
+		
+		boardMapper.authorityRegister(uId);
+		
 	}
 
 	

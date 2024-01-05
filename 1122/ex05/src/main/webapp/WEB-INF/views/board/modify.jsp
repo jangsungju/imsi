@@ -162,6 +162,19 @@ select[disabled]:active {
 											<option value="02"
 											${member.deleteCol == '02' ? 'selected' : ''}>보관</option>
 								</tr>
+									<c:if test="${showAuthoRow}">
+        								<tr>
+								            <td>권한</td>
+								            <td>
+								                <select name="authoNo">
+								                    <option value=""></option>
+								                    <option value="01">관리자</option>
+								                    <option value="02">사원</option>
+								                </select>
+								            </td>
+								            <td></td>
+								        </tr>
+								    </c:if>
 								<tr>
 									<td colspan="6">
 										<div style="text-align: right;">

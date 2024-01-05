@@ -78,6 +78,16 @@ public class MemberServiceImpl implements MemberService {
 		return memberMapper.addUserProjects(project);
 	}
 
+
+	@Override
+	public int checkId(String uId) {
+		
+		return memberMapper.checkId(uId);
+	}
+
+
+
+	
 	
 	
 

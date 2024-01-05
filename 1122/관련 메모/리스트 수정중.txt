@@ -1,0 +1,216 @@
+
+좋습니다. 예시를 들어서 자세히 설명해드리겠습니다.
+
+웹 브라우저에서 list.jsp 페이지를 열고 검색 조건을 입력합니다.
+검색 버튼을 클릭하면 search2() 함수가 실행됩니다.
+search2() 함수에서는 AJAX를 사용하여 /board/search 경로로 POST 요청을 보냅니다.
+POST 요청의 본문에는 입력한 검색 조건이 JSON 형식으로 포함되어 있습니다.
+서버는 해당 요청을 받아 검색 조건을 기반으로 데이터를 조회한 후, JSON 형식으로 응답합니다.
+success 콜백 함수에서는 서버로부터 받은 JSON 데이터를 활용하여 테이블에 정보를 동적으로 생성합니다.
+$.each 함수를 사용하여 JSON 데이터를 순회하면서 각 데이터 항목을 테이블의 행으로 추가합니다.
+예시 코드: $("#appendBody").append(bodyHtml);
+테이블에 정보가 추가되고, 화면에 결과가 표시됩니다.
+만약 페이징 처리를 위해 서버로부터 PageDTO 객체를 JSON 형식으로 받아와야 한다면, 다음과 같이 추가적인 처리를 수행할 수 있습니다.
+
+서버는 검색 결과와 함께 페이징 처리를 위한 PageDTO 객체를 JSON 형식으로 응답합니다.
+success 콜백 함수에서는 서버로부터 받은 JSON 데이터를 활용하여 테이블에 정보를 동적으로 생성하고, 동시에 페이징 처리를 수행합니다.
+PageDTO 객체에서 필요한 정보를 추출하여 페이지 번호 등을 생성하고, 해당 정보를 화면에 표시합니다.
+예시 코드: <c:forEach var="num" begin="${pageDTO.start}" end="${pageDTO.end}">
+이렇게 하면 검색 결과와 함께 페이징 처리된 정보가 화면에 표시됩니다. 검색 조건에 따라 데이터가 변경되거나 페이징 처리가 필요한 경우, AJAX를 통해 서버와 통신하여 정보를 업데이트할 수 있습니다.
+
+추가적인 도움이 필요하시면 언제든지 물어보세요!
+
+
+// Controller
+@PostMapping("/search")
+@ResponseBody
+public ResponseEntity<SearchResult> search(@RequestBody SearchRequest request) {
+    // 검색 조건과 페이징 정보를 활용하여 데이터를 조회하고, 페이징 처리를 수행하는 로직
+    
+    // 검색 결과와 페이징 정보를 담은 SearchResult 객체 생성
+    SearchResult searchResult = new SearchResult();
+    searchResult.setData(memberList); // 검색 결과 데이터 설정
+    searchResult.setPageInfo(pageDTO); // 페이징 정보 설정
+    
+    // ResponseEntity를 사용하여 JSON 형식의 응답을 반환
+    return ResponseEntity.ok(searchResult);
+}
+
+
+// Controller
+@PostMapping("/search")
+@ResponseBody
+public ResponseEntity<SearchResult> search(@RequestBody SearchRequest request) {
+    // 검색 조건과 페이징 정보를 활용하여 데이터를 조회하고, 페이징 처리를 수행하는 로직
+    
+    // 1. 검색 조건과 페이징 정보 추출
+    String unm = request.getUnm(); // 이름
+    String jobSkill = request.getJobSkill(); // 기술등급
+    String inoffiSts = request.getInoffiSts(); // 재직상태
+    LocalDate startDate = request.getStartDate(); // 입사일 시작일
+    LocalDate endDate = request.getEndDate(); // 입사일 종료일
+    int pageNum = request.getPageNum(); // 페이지 번호
+    int amount = request.getAmount(); // 한 페이지 당 데이터 개수
+    
+    // 2. 데이터 조회를 위한 검색 쿼리 실행
+    List<MemberDTO> memberList = memberService.searchMembers(unm, jobSkill, inoffiSts, startDate, endDate, pageNum, amount);
+    
+    // 3. 전체 데이터 개수 조회
+    int totalCount = memberService.getTotalCount(unm, jobSkill, inoffiSts, startDate, endDate);
+    
+    // 4. 페이징 처리를 위한 PageDTO 객체 생성
+    Criteria criteria = new Criteria(pageNum, amount);
+    PageDTO pageDTO = new PageDTO(totalCount, criteria);
+    
+    // 5. 검색 결과와 페이징 정보를 담은 SearchResult 객체 생성
+    SearchResult searchResult = new SearchResult();
+    searchResult.setData(memberList); // 검색 결과 데이터 설정
+    searchResult.setPageInfo(pageDTO); // 페이징 정보 설정
+    
+    // 6. ResponseEntity를 사용하여 JSON 형식의 응답을 반환
+    return ResponseEntity.ok(searchResult);
+}
+
+위의 예시 코드에서는 search 메서드 내에서 검색 조건과 페이징 정보를 활용하여 데이터를 조회하고, 페이징 처리를 수행하는 로직을 설명드리겠습니다.
+
+검색 조건과 페이징 정보를 추출합니다. 예시 코드에서는 SearchRequest 객체를 통해 요청 바디로부터 검색 조건과 페이징 정보를 받아왔습니다.
+데이터 조회를 위한 검색 쿼리를 실행합니다. 예시 코드에서는 memberService.searchMembers() 메서드를 호출하여 회원 데이터를 검색합니다. 이때, 검색 조건과 페이징 정보를 인자로 전달합니다.
+전체 데이터 개수를 조회합니다. 예시 코드에서는 memberService.getTotalCount() 메서드를 호출하여 전체 회원 데이터 개수를 조회합니다. 이때, 검색 조건을 인자로 전달합니다.
+페이징 처리를 위한 PageDTO 객체를 생성합니다. 예시 코드에서는 검색 결과 데이터 개수와 페이징 정보를 이용하여 PageDTO 객체를 생성합니다.
+검색 결과와 페이징 정보를 담은 SearchResult 객체를 생성합니다. 예시 코드에서는 검색 결과 데이터와 PageDTO 객체를 SearchResult 객체에 설정합니다.
+ResponseEntity.ok()를 사용하여 JSON 형식의 응답을 반환합니다. SearchResult 객체를 인자로 전달하여 응답 본문에 해당 객체를 JSON 형식으로 변환하여 담습니다.
+위의 예시 코드에서는 각 단계별로 주석을 추가하여 설명을 더욱 자세히 드렸습니다. 실제 프로젝트에 적용할 때에는 해당 로직을 프로젝트에 맞게 수정하고, 데이터 조회와 페이징 처리를 위한 쿼리를 실행하도록 구현하시면 됩니다.
+
+추가적인 도움이 필요하시면 언제든지 물어보세요!
+
+// SearchResult 클래스
+public class SearchResult {
+    private List<MemberDTO> data; // 검색 결과 데이터
+    private PageDTO pageInfo; // 페이징 정보
+    
+    // 생성자, getter, setter 생략
+}
+
+
+
+
+// list.jsp JavaScript 코드
+function search2() {
+    var formData = {
+        unm: $("#unmInput").val(),
+        jobSkill: $("#jobSkillInput").val(),
+        inoffiSts: $("#inoffiStsInput").val(),
+        startDate: $("#dateInput1").val(),
+        endDate: $("#dateInput2").val()
+    };
+    
+    $.ajax({
+        url: "/board/search",
+        type: "POST",
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(formData),
+        success: function(response) {
+            $("#appendBody").empty();
+            
+            // 검색 결과 데이터를 테이블에 추가
+            $.each(response.data, function(index, item) {
+                var row = "<tr>" +
+                          "<td>" + item.uno + "</td>" +
+                          "<td>" + item.unm + "</td>" +
+                          "<td>" + item.birth + "</td>" +
+                          "<td>" + item.sex + "</td>" +
+                          "<td>" + item.jobRank + "</td>" +
+                          "<td>" + item.jobSkill + "</td>" +
+                          "<td>" + item.inoffiSts + "</td>" +
+                          "<td>" + item.entrDate + "</td>" +
+                          "<td><a href='#'>보기 (" + item.uno + ")</a></td>" +
+                          "</tr>";
+                $("#appendBody").append(row);
+            });
+            
+            // 페이징 정보 표시
+            var pageInfo = response.pageInfo;
+            var pageHtml = "";
+            for (var i = pageInfo.start; i <= pageInfo.end; i++) {
+                pageHtml += "<code>" + i + "</code>";
+            }
+            $("#pagination").html(pageHtml);
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}
+
+
+위의 예시 코드에서는 SearchResult 클래스를 사용하여 검색 결과 데이터와 페이징 정보를 한 번에 담고 있습니다. 컨트롤러에서는 SearchResult 객체를 생성하여 검색 결과 데이터와 페이징 정보를 설정한 후, ResponseEntity.ok()를 사용하여 JSON 형식의 응답을 반환합니다.
+
+list.jsp 파일에서는 AJAX 요청의 응답으로 받은 JSON 데이터를 활용하여 테이블에 검색 결과를 동적으로 생성하고, 페이징 정보도 함께 표시합니다. $.each 함수를 사용하여 검색 결과 데이터를 순회하면서 테이블의 각 행을 추가하고, 페이징 정보를 반복문을 통해 생성하여 화면에 표시합니다.
+
+이렇게 구현하면 검색 결과와 페이징 처리된 정보가 화면에 표시됩니다.
+
+위 예시 코드는 일부분만을 보여주는 것이므로, 실제 프로젝트에 적용하려면 필요한 부분을 추가 및 수정해야 할 수 있습니다. 필요에 따라 코드를 수정하고 구현하시면 됩니다.
+
+추가적인 도움이 필요하시면 언제든지 물어보세요!
+
+
+
+
+
+// list.jsp JavaScript 코드
+// 페이지 번호 클릭 이벤트 처리
+function goToPage(pageNum) {
+    var formData = {
+        unm: $("#unmInput").val(),
+        jobSkill: $("#jobSkillInput").val(),
+        inoffiSts: $("#inoffiStsInput").val(),
+        startDate: $("#dateInput1").val(),
+        endDate: $("#dateInput2").val(),
+        pageNum: pageNum, // 클릭한 페이지 번호
+        amount: 10 // 한 페이지 당 데이터 개수
+    };
+    
+    $.ajax({
+        url: "/board/search",
+        type: "POST",
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(formData),
+        success: function(response) {
+            $("#appendBody").empty();
+            
+            // 검색 결과 데이터를 테이블에 추가
+            $.each(response.data, function(index, item) {
+                var row = "<tr>" +
+                          "<td>" + item.uno + "</td>" +
+                          "<td>" + item.unm + "</td>" +
+                          "<td>" + item.birth + "</td>" +
+                          "<td>" + item.sex + "</td>" +
+                          "<td>" + item.jobRank + "</td>" +
+                          "<td>" + item.jobSkill + "</td>" +
+                          "<td>" + item.inoffiSts + "</td>" +
+                          "<td>" + item.entrDate + "</td>" +
+                          "<td><a href='#'>보기 (" + item.uno + ")</a></td>" +
+                          "</tr>";
+                $("#appendBody").append(row);
+            });
+            
+            // 페이징 정보 업데이트
+            showPagination(response.pageInfo);
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}
+
+// 페이징 정보 표시
+function showPagination(pageInfo) {
+    var pageHtml = "";
+    for (var i = pageInfo.start; i <= pageInfo.end; i++) {
+        pageHtml += "<a href='#' onclick='goToPage(" + i + ")'>" + i + "</a>";
+    }
+    $("#pagination").html(pageHtml);
+}
+

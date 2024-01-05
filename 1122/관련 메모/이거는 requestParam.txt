@@ -1,0 +1,42 @@
+이거는 requestParam
+
+function goRegister(){
+		
+		if (savedFormData) {
+			console.log("검색조건 저장 확인 " , JSON.stringify(savedFormData));
+	        // register 페이지로 이동 값을 가지고 이동
+	        window.location.href = '/board/register?' + $.param(savedFormData);
+	    } else {
+	    	// 그냥이동
+	    	window.location.href = '/board/register'
+	    }
+		
+	}
+
+이렇게 저장된 savedFormData를
+register로 보내고 나서
+이제 
+
+http://localhost:8090/board/register?amount=4&pageNum=5&inoffiSts=01
+
+이런식으로 url로 전달이 되면
+
+저 정보들은 controller에 있는 
+만약
+list 부분으로 돌아간다면
+
+
+	
+		
+/* 	function goRegister(){
+		
+		if (savedFormData) {
+			console.log("검색조건 저장 확인 " , savedFormData);
+	        // register 페이지로 이동 값을 가지고 이동
+	        window.location.href = '/board/register?' + $.param(savedFormData);
+	    } else {
+	    	// 그냥이동
+	    	window.location.href = '/board/register'
+	    }
+		 
+	}*/

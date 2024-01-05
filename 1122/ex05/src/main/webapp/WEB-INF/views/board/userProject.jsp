@@ -80,8 +80,8 @@ input[type="checkbox"] {
 						                        <td><input type="checkbox" name="projectCheckbox" value="${project.uno}-${project.pjtNo}"></td>
 						                        <td>${project.pjtNm}</td>
 						                        <td>${project.companyNm}</td>
-						                        <td><input type="date" value="${project.inpDate}"></td>
-						                        <td><input type="date" value="${project.wdpDate}"></td>
+						                        <td><input type="date" id="dateInput1" oninput="limitDateInput('dateInput1'); validateDateRange()" value="${project.inpDate}"></td>
+						                        <td><input type="date" id="dateInput1" oninput="limitDateInput('dateInput2'); validateDateRange()" value="${project.wdpDate}"></td>
 						                        <td>
 						                        	<select name="jobRank">
 														<option value="${project.pjtRole}" ${project.pjtRole != null ? 'selected' : ''}></option>
@@ -139,6 +139,15 @@ function goBack() {
 	    // 선택된 프로젝트 정보 수집
 	    var selectedProjects = [];
 	    
+	    
+	    // 체크박스가 하나도 선택되지 않은 경우 알림 띄우기
+	    if ($('input[name="projectCheckbox"]:checked').length === 0) {
+	        alert("수정 또는 삭제할 프로젝트를 선택해주세요.");
+	        return;
+	    }
+	    
+	    
+	    
 	    $('input[name="projectCheckbox"]:checked').each(function() {
 	        
 	    	var values = $(this).val().split("-");
@@ -174,8 +183,8 @@ function goBack() {
 	        dataType: "json",
 	        success: function(response) {
             
-	        	 console.log("응답:", response); // 전체 응답 로그
-	        	    console.log("업데이트 결과:", response.updateResult); // 특정 속성 로그
+	        	 console.log("응답:" + response); // 전체 응답 로그
+	        	    console.log("업데이트 결과:" + response.updateResult); // 특정 속성 로그
 	        	    
 	        	   // 성공적으로 업데이트된 경우에 수행할 동작
 	            if (response.updateResult) {
@@ -187,6 +196,7 @@ function goBack() {
 	            if (response.deleteResult) {
 	                
 	            	alert(response.deleteResult);
+	            	location.reload(); // 페이지 새로고침
 	            }
 	        
 	        	},error: function(error) {

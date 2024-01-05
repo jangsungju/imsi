@@ -3,6 +3,8 @@ package com.example.ex05.domain.member.vo;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Component
@@ -12,6 +14,10 @@ public class MemberDTO {
 	private long uno;
    	private String unm;
 	private String pwd;
+	 
+	@JsonProperty("uId")
+	private String uId;
+	private String authoNo;
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private String birth;

@@ -33,4 +33,7 @@ public interface MemberMapper {
     
     public boolean addUserProjects(MemberProjectDTO project);
     
+    public int checkId(String uId);
+    
+    
 }

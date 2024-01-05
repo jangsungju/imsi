@@ -53,12 +53,12 @@ input[type="checkbox"] {
 								</tr>
 							</table>
 								<div style="text-align: right; margin-bottom: 25px;">
-    								<form action="/project/addProjectUsers" method="post" style="display: inline;">
-        								<input type="hidden" name="uno" value="${userProject[0].uno}">
-        								<input type="hidden" name="entrDate" value="${userProject[0].entrDate}">
+    								<form action="/project/addProjectMember" method="post" style="display: inline;">
+        								<input type="hidden" name="pjtNo" value="${pjtNo}">
+        								<input type="hidden" name="pjtToDate" value="${projectMembers[0].pjtToDate}">
         								<button type="submit" class="button" style="font-size: 16px;">인원 추가</button>
     								</form> &nbsp;&nbsp;&nbsp;&nbsp;
-    									<input type="button" value="수정" onclick="changeUserProject('update')">&nbsp;&nbsp;&nbsp;
+    									<input type="button" value="수정" onclick="changeProjectUsers('update')">&nbsp;&nbsp;&nbsp;
 								</div>
 							<table style="text-align:center;">
 								<thead>
@@ -108,7 +108,7 @@ input[type="checkbox"] {
 	   								<tr>
 										<td colspan="6">
 											<div style="text-align: right;">
-												<input type="button" value="삭제" onclick="changeUserProject('delete')">
+												<input type="button" value="삭제" onclick="changeProjectUsers('delete')">
 												&nbsp;&nbsp;&nbsp;&nbsp; 
 												<form action='/project/list' method='post' style="display: inline;">
         											<input type="hidden" name="uno" value="${uno}">
@@ -138,6 +138,12 @@ input[type="checkbox"] {
 	    // 선택된 프로젝트 정보 수집
 	    var selectedProjects = [];
 	    
+	    // 체크박스가 하나도 선택되지 않은 경우 알림 띄우기
+	    if ($('input[name="projectCheckbox"]:checked').length === 0) {
+	        alert("수정 또는 삭제할 프로젝트를 선택해주세요.");
+	        return;
+	    }
+	    
 	    $('input[name="projectCheckbox"]:checked').each(function() {
 	        
 	    	var values = $(this).val().split("-");
@@ -148,7 +154,7 @@ input[type="checkbox"] {
 	        var pjtRole = $(this).closest('tr').find('select[name="jobRank"]').val();
 
 	     	// console.log를 사용하여 선택된 아이템의 값들을 확인
-	        console.log("uno: " + uno + ", pjtNo: " + pjtNo + ", inpDate: " + inpDate + ", wdpDate: " + wdpDate + ", pjtRole: " + pjtRole + ",action" + action);
+	        console.log("uno: " + uno + ", pjtNo: " + pjtNo + ", inpDate: " + inpDate + ", wdpDate: " + wdpDate + ", pjtRole: " + pjtRole + ",action:" + action);
 
         	selectedProjects.push({
 	            
@@ -167,7 +173,7 @@ input[type="checkbox"] {
     	$.ajax({
         
     		type: "POST",
-	        url: "/projcet/changeProjectUsers",
+	        url: "/project/changeProjectUsers",
 	        contentType: "application/json",
 	        data: JSON.stringify(selectedProjects),
 	        dataType: "json",
@@ -177,17 +183,19 @@ input[type="checkbox"] {
 	            if (response.updateResult) {
 	                
 	            	alert(response.updateResult);
+	            	 location.reload(); // 페이지 리로드
 	            }
 	            
 	            // 성공적으로 삭제된 경우에 수행할 동작
 	            if (response.deleteResult) {
 	                
 	            	alert(response.deleteResult);
+	            	 location.reload(); // 페이지 리로드
 	            }
 	        
 	        	},error: function(error) {
 	            // 에러 처리
-	            alert("프로젝트 수정 중 오류가 발생했습니다.");
+	            alert("프로젝트 사원정보 수정 중 오류가 발생했습니다.");
 	        	  }
 	            
     	});

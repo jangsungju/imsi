@@ -29,6 +29,7 @@ public class MemberVO {
 //	delete_col char(2)
 	
 	private long uno;
+	private String uId;
    	private String unm;
 	private String pwd;
 	
@@ -46,7 +47,8 @@ public class MemberVO {
 	private String mblNo;
 	private String emailAddr;
 	private String deleteCol;
-	
+
+	private String authoNo;
 
 	}
 	

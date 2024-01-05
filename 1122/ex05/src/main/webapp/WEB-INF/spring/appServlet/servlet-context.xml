@@ -25,6 +25,7 @@
 	<context:component-scan base-package="com.example.ex05.exception"/>
 	<context:component-scan base-package="com.example.ex05.domain.member.vo"/>
 	<context:component-scan base-package="com.example.ex05.domain.project.vo"/>
+	<context:component-scan base-package="com.example.ex05.Sha"></context:component-scan>
 	
 	
 	

@@ -1,0 +1,168 @@
+
+
+
+karlite@naver.com
+jiyoung88
+
+wldyddl@1234
+
+<if test="inoffiSts != null and inoffiSts != '' ">
+			AND INOFFI_STS LIKE '%'||#{inoffiSts}||'%'
+		</if>
+		<if test="startDate != null">
+			AND ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null">
+			AND ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="jobSkill != null and jobSkill != '' " >
+			AND JOBSKILL LIKE '%' || #{jobSkill} || '%'
+		</if>
+		<if test="unm == null and inoffiSts == null and startDate == null and endDate == null and jobSkill == null">
+			AND 1=1
+		</if>
+
+
+
+
+<select id="search" parameterType="memberDTO" resultType="memberDTO" >
+	SELECT 
+		M.UNO as UNO
+		, M.UNM AS UNM
+		, M.PWD AS PWD
+		, TO_CHAR(M.birth, 'YYYY-MM-DD') AS BIRTH
+		, M.PHOTO AS PHOTO
+		, SE.DTL_CDNM AS SEX
+		, TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE
+		, JR.DTL_CDNM AS JOBRANK
+		, JS.DTL_CDNM AS JOBSKILL
+		, DP.DTL_CDNM AS DEVPT
+		, IO.DTL_CDNM AS INOFFI_STS
+		, M.MBLNO AS MBLNO
+		, M.EMAILADDR AS EMAILADDR
+		, M.DELETE_COL AS DELETE_COL
+	FROM EX00.MEMBER M
+		JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
+		JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
+		JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
+		JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
+		JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
+		JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
+	<where>
+		<if test="unm != null and unm != ''">
+			OR UNM LIKE '%' || #{unm} || '%'
+		</if>
+		<if test="inoffiSts != null and inoffiSts != ''">
+			OR INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
+		</if>
+		<if test="startDate != null">
+			OR ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null">
+			OR ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="jobSkill != null and jobSkill != ''">
+			OR JOBSKILL LIKE '%' || #{jobSkill} || '%'
+		</if>
+	</where>
+</select>
+이거 우선 값을 하나씩 넣어서 조회는 되는데
+
+
+<select id="search" parameterType="memberDTO" resultType="memberDTO" >
+	SELECT 
+		M.UNO as UNO
+		, M.UNM AS UNM
+		, M.PWD AS PWD
+		, TO_CHAR(M.birth, 'YYYY-MM-DD') AS BIRTH
+		, M.PHOTO AS PHOTO
+		, SE.DTL_CDNM AS SEX
+		, TO_CHAR(M.ENTRDATE, 'YYYY-MM-DD') AS ENTRDATE
+		, JR.DTL_CDNM AS JOBRANK
+		, JS.DTL_CDNM AS JOBSKILL
+		, DP.DTL_CDNM AS DEVPT
+		, IO.DTL_CDNM AS INOFFI_STS
+		, M.MBLNO AS MBLNO
+		, M.EMAILADDR AS EMAILADDR
+		, M.DELETE_COL AS DELETE_COL
+	FROM EX00.MEMBER M
+		JOIN dtl_code se ON m.sex = se.dtl_cd AND se.code = 'D100'
+		JOIN dtl_code jr ON m.jobRank = jr.DTL_CD  AND jr.CODE ='D200'
+		JOIN dtl_code js ON m.jobSkill = js.DTL_CD  AND js.CODE ='D300'
+		JOIN dtl_code dp ON m.devPt = dp.DTL_CD  AND dp.CODE ='D400'
+		JOIN dtl_code io ON m.inoffi_sts = io.DTL_CD  AND io.CODE ='D500'
+		JOIN dtl_code dl ON m.delete_col = dl.DTL_CD AND dl.CODE ='D800'
+	<where>
+		<if test="unm != null and unm != ''">
+			OR UNM LIKE '%' || #{unm} || '%'
+		</if>
+		<if test="inoffiSts != null and inoffiSts != ''">
+			OR INOFFI_STS LIKE '%' || #{inoffiSts} || '%'
+		</if>
+		<if test="startDate != null and startDate != '' ">
+			OR ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="endDate != null and endDate != '' ">
+			OR ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="startDate != null and startDate != '' and endDate != null and endDate != '' ">
+		    OR ENTRDATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+		</if>
+		<if test="jobSkill != null and jobSkill != ''">
+			OR JOBSKILL LIKE '%' || #{jobSkill} || '%'
+		</if>
+	</where>
+</select>
+
+이거는 다 조회가 가능함 그런데 날짜를 2개다 입력하면 중복결과가 나와서 모든게조회가됨
+
+
+
+
+
+
+
+<if test="startDate != null and endDate != null">
+	AND ENTRDATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+</if>
+이렇게 함 해보고
+
+<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+	OR (ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD') AND ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD'))
+</if>
+<if test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
+	OR ENTRDATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+</if>
+<if test="(startDate == null or startDate == '') and (endDate != null and endDate != '')">
+	OR ENTRDATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+</if>
+
+이게 지금 준건데 중복값없는거
+
+
+
+// 전체 선택/해제 함수
+function selectAll() {
+  var checkboxes = document.getElementsByName('ckNum');
+  var selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = selectAllCheckbox.checked;
+  }
+}
+
+
+// 특정 row의 checkbox 클릭 시
+function selectRow(checkbox) {
+  var row = checkbox.parentNode.parentNode;
+  var uno = row.cells[1].innerText; // uno 값 가져오기
+  
+  // uno 값을 이용한 원하는 동작 수행
+  // 예시: 선택된 uno 값을 콘솔에 출력
+  console.log(uno);
+}\
+
+
+<th class="ckNum"><input style="" name="ckNum" type="checkbox" value="" onclick="selectAll()"></th>
+<td class="ckNum"><input style="" name="ckNum" type="checkbox" value="" onclick="selectRow(this)"></td>
+

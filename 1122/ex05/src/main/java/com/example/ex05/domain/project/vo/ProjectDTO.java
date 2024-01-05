@@ -38,4 +38,10 @@ public class ProjectDTO {
 	private long uno;
 	private String unm;
 	private String pjtRole;
+	private String action;
+	
+	private String jobRank;
+	private String jobSkill;
+	
+	
 }

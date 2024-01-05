@@ -1,0 +1,142 @@
+스프링이란
+ pojo 자바 가능
+의존성 주입
+객체를 바로 생성해서 사용하면 결합성이 너무 좋다
+그래서 주입받는 형식으로 결합성을 낮춘다.
+
+ApplicationContext가 주입을 관리해준다
+필요객체를 생성하고 주입하는 역할을 함
+
+bean은 스프링이 관리하는 객체
+빈과빈 사이의 의존 관계를 처리하는것은
+xml방식 어노테이션 설정으로 한다 java방식은 별로 안쓴다
+
+aop 관점지향언어
+비즈니스 로직만을 작성할 수 있게 만든다
+ 
+ db작업 시 트랜적션 관리를 매번 상황에 맞게 코드로 작성하지 않고
+ 어노테이션이나 xml로 트랜잭션 관리를 설정한다
+
+
+14강 동작 원리 설명
+1.xml파일에 쿼리문을 작성한다
+ex) testmapper.xml
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ex03.mapper.TestMapper">
+   <!--namespace는 경로 설정을 해주고 밑에 id는 timemapper에 사용하는 함수와 이름을 같게 설정해준다.  -->
+   <!-- id는 위에 경로에 있는 메소드 이름과 동일하게 해주고 resultType는 경로 어디있는지 입력해준다.
+    아래처럼 쓸경우 어디있는지 보기는 좋지만 너무 길어서 귀찮다 그래서 config.xml에서 typeAliasesj에서 
+    typeAlias를 사용하여 별칭을 붙여 사용해준다
+   <select id="getList" resultType="com.example.ex03.domain.vo.TestVO"> -->
+   <select id="getList" resultType="testVO">
+    SELECT ID,NAME FROM TBL_TEST
+   </select>
+
+</mapper>
+
+
+2.sql문을 작성했으면 연결할 mapper인터페이스가 있어야 한다.
+mapper인터페이스 메소드와 연결시켜야한다.
+
+3.sql과 mapper메소드가 연결되면 메소드를 실행하면 sql이 실행이되고
+return이 있으면 retrun을 하고 parameter가 필요하면 parameter를 보내주고
+해서 사용해주면된다
+ 
+====================================================================
+Front-Controller 패턴
+
+			HandlerMapping
+	REQUEST	  ①	       ②↕		③		   ④
+		  ↔	DispatcherServlet	↔   HandlerAdapter  ↔  Controller
+	RESPONSE ⑧	   ⑥↕	↕⑤
+			View	ViewResolver
+			   ⑦↕
+			HTML, JSP 등
+
+	1(①).
+		사용자의 Request는 Front-Controller인 DispatcherServlet을 통해 처리된다.
+
+	2(②, ③).
+		HandlerMapping은 Request의 처리를 담당하는 컨트롤러를 찾기 위해서 존재한다.
+		여러 객체 중@controller가 있는곳에 @RequestMapping("/test[경로]") 
+                어노테이션이 적용된 것을 기준으로 판단하며,
+		적절한 컨트롤러가 찾아졌다면 HandlerAdapter를 이용해서 해당 컨트롤러를 동작시킨다.
+
+	3(④, ⑤).
+		Controller는 Request를 처리하는 비지니스 로직을 작성하며, View에 전달해야 하는
+		데이터를 RequestScope에 담아서 전달한다. 응답 페이지 대한 경로 처리는 
+		ViewResolver를 이용하게 된다.
+
+	4(⑤).
+		ViewResolver는 Controller가 리턴한 결과 값을 전체 경로로 완성시켜준다.
+
+	5(⑥, ⑦).
+		View는 실제 응답을 보내야하는 데이터를 HTML, JSP등을 이용해서 생성하는 역할을 한다.
+
+	6(⑧).
+		만들어진 응답 페이지를 DispatcherServlet을 통해 전송한다.
+
+	* 특징
+	 - HttpServletRequest, HttpServletResponse를 거의 사용할 필요 없이 기능 구현 model객체
+	 - 다양한 타입의 파라미터 처리, 다양한 타입의 리턴 타입 사용 가능
+	 - GET 방식, POST 방식 등 전송 방식에 대한 처리를 어노테이션으로 처리 가능
+	 - 상속/인터페이스 방식 대신 어노테이션만으로도 설정 가능
+---------------------------------------------------------------------------------------------------------------------------------
+
+16강 홈컨트롤러
+
+ex02에 있는 로그4j가 설정이 잘못 되있어서 출력이 안 보였음 시발 개같은 강의 죽여버린다..
+시간있으면 내폴더 ex03 log4j와 ex04 log4j를 비교해보자 뭐가 다른가
+
+
+17강 ex03까지
+
+request mapping?
+여러가지의 메소드를 동시에 포함시킬때 사용한다.
+
+get mapping?   
+
+18강 화면에 뿌리기 와  model객체 설명     
+  
+19강
+
+c:Set에서 변수를 선언하는데 name는 아니고
+var로 변수를 선언해 준다!!
+
+쿼리스트링으로 사용하면 너무 귀찮으니
+uiux로 버튼이나 input 태크로 편하게 입력하고 submit을 할수 있게 한다.
+
+20강
+id가 user일 경우
+id가 admin일 경우 페이지가 다르게 이동된다.
+
+${id} el문을 사용 할때 빈칸을 띄우면 값이 안나오더라
+
+
+컨트롤러에서
+void를 쓰면 요청경로에서 찾겠다
+String을 사용하면 내가 가고싶은 페이지를 리턴한다.
+
+
+part2 근퇴계산
+
+
+3강 할인율적용에서  js사용하는거 어렵
+
+
+11강 마이바티스는 건수가 1이면 성공 , 0이면 실패
+
+16강
+redirect는 requestscope를 사용할 수없다
+그래서 
+1.session을 이용한다.
+2.쿼리스트링을 사용...?
+
+redircetAttribute
+
+기본적으로 아무것도 안쓰면 forward방식이다.
+
+jsp2 26강부터 사진 올리고 보이게 하는거 ㄱㄱ
